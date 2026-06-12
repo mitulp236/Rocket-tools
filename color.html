@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Color Picker, Palette Generator &amp; Contrast Checker | Rocket Tools</title>
+  <meta name="description" content="Pick colors, build harmonies and gradients, and check WCAG contrast compliance. HEX, RGB and HSL conversion with a saved palette — free and private." />
+  <link rel="canonical" href="https://rocket-tools.app/color.html" />
+  <meta property="og:site_name" content="Rocket Tools" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Color Picker, Palette Generator &amp; Contrast Checker" />
+  <meta property="og:description" content="Pick colors, build harmonies and gradients, check WCAG contrast. HEX, RGB and HSL with a saved palette." />
+  <meta property="og:url" content="https://rocket-tools.app/color.html" />
+  <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta name="theme-color" content="#FDFAF5" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"Color Studio","url":"https://rocket-tools.app/color.html","applicationCategory":"DesignApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Color picker with harmonies, gradient builder, WCAG contrast checker and saved palettes."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"Color Studio","item":"https://rocket-tools.app/color.html"}]}]}</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    .wrap { max-width: 920px; margin: 0 auto; padding: 24px 20px 60px; display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    @media (max-width: 760px) { .wrap { grid-template-columns: 1fr; } }
+    .panel { background: var(--card); border-radius: var(--radius); border: 1px solid rgba(255,255,255,0.6); box-shadow: var(--shadow); padding: 22px; }
+    .panel h2 { font-size: 12px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+    .panel.full { grid-column: 1 / -1; }
+
+    /* picker */
+    .pick-row { display: flex; gap: 16px; align-items: center; margin-bottom: 16px; }
+    .swatch-big {
+      width: 92px; height: 92px;
+      border-radius: 20px;
+      border: 1px solid rgba(0,0,0,0.08);
+      box-shadow: 0 10px 26px -10px rgba(26,26,26,0.3);
+      position: relative; overflow: hidden;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+    .swatch-big input[type=color] {
+      position: absolute; inset: -10px;
+      width: 120%; height: 120%;
+      border: none; cursor: pointer;
+      padding: 0; background: none;
+    }
+    .pick-fields { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .fmt-row {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg); border: 1px solid var(--line);
+      border-radius: 11px; padding: 8px 12px;
+      font-family: var(--mono); font-size: 12.5px;
+    }
+    .fmt-row .lab { font-family: 'Inter'; font-size: 10.5px; font-weight: 700; color: var(--muted); width: 30px; }
+    .fmt-row .val { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .fmt-row input { flex: 1; border: none; background: none; font: inherit; color: var(--ink); min-width: 0; }
+    .fmt-row input:focus { outline: none; }
+    .copy-mini {
+      border: none; background: none; cursor: pointer;
+      color: var(--gold); font-size: 11px; font-weight: 700;
+      font-family: 'Inter'; padding: 3px 7px; border-radius: 7px;
+    }
+    .copy-mini:hover { background: var(--card); }
+
+    /* harmony swatches */
+    .sw-row { display: flex; gap: 8px; margin: 9px 0 20px; flex-wrap: wrap; }
+    .sw-row:last-child { margin-bottom: 0; }
+    .sw-label {
+      font-size: 10.5px; font-weight: 700;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .sw {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      cursor: pointer;
+      border: 1px solid rgba(0,0,0,0.07);
+      transition: transform 0.18s;
+      position: relative;
+    }
+    .sw:hover { transform: scale(1.12); z-index: 2; }
+    .sw:active { transform: scale(0.95); }
+
+    /* contrast */
+    .c-inputs { display: flex; gap: 12px; margin-bottom: 14px; }
+    .c-inputs .ci { flex: 1; display: flex; align-items: center; gap: 9px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px; }
+    .ci input[type=color] { width: 30px; height: 30px; border: none; background: none; padding: 0; cursor: pointer; border-radius: 8px; }
+    .ci span { font-size: 12px; font-weight: 600; color: var(--muted); }
+    .c-sample {
+      border-radius: 14px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      border: 1px solid rgba(0,0,0,0.06);
+    }
+    .c-sample .big { font-size: 21px; font-weight: 700; }
+    .c-sample .small { font-size: 13px; margin-top: 2px; }
+    .c-score { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .ratio { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+    .wcag { display: flex; gap: 7px; flex-wrap: wrap; }
+    .wcag span { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 99px; }
+    .pass { background: #E9F0E6; color: var(--good); }
+    .failb { background: #F7E8E4; color: var(--bad); }
+
+    /* gradient */
+    .g-preview {
+      height: 130px; border-radius: 16px;
+      border: 1px solid rgba(0,0,0,0.06);
+      margin-bottom: 14px;
+    }
+    .g-controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 14px; }
+    .g-controls .ci { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--line); border-radius: 12px; padding: 7px 11px; }
+    .g-controls input[type=color] { width: 28px; height: 28px; border: none; background: none; padding: 0; cursor: pointer; }
+    .g-controls input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      width: 120px; height: 6px; border-radius: 99px;
+      background: var(--line);
+    }
+    .g-controls input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px; border-radius: 50%;
+      background: var(--gold); cursor: pointer; border: 3px solid var(--bg);
+      box-shadow: 0 2px 8px rgba(26,26,26,0.25);
+    }
+    .g-controls select { font-family: inherit; font-size: 12.5px; font-weight: 600; background: var(--bg); border: 1.5px solid var(--line); border-radius: 10px; padding: 8px 10px; color: var(--ink); }
+    .css-out {
+      display: flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: 11.5px;
+      background: var(--bg); border: 1px solid var(--line);
+      border-radius: 11px; padding: 10px 13px;
+    }
+    .css-out .val { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* saved palette */
+    .pal-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .pal-chip { position: relative; }
+    .pal-chip .x {
+      position: absolute; top: -6px; right: -6px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--ink); color: var(--bg);
+      font-size: 10px; line-height: 18px; text-align: center;
+      cursor: pointer; opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .pal-chip:hover .x { opacity: 1; }
+    .pal-empty { font-size: 12.5px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="nav-home" href="./"><svg width="21" height="21" viewBox="0 0 512 512"><circle cx="256" cy="256" r="240" fill="#C8A96E"/><path d="M256 96c52 38 76 96 76 156 0 22-3 43-10 62h-132c-7-19-10-40-10-62 0-60 24-118 76-156z" fill="#FDFAF5"/><circle cx="256" cy="222" r="26" fill="#C8A96E"/><path d="M190 314l-44 56 62-14M322 314l44 56-62-14" fill="#FDFAF5"/><path d="M256 330c14 18 14 48 0 76-14-28-14-58 0-76z" fill="#F0B45C"/></svg><span>Rocket Tools</span></a>
+    <span class="nav-sep">/</span>
+    <h1 class="nav-title">Color Studio</h1>
+    <div class="spacer"></div>
+    <button class="btn btn-gold btn-sm" id="saveBtn">＋ Save color</button>
+  </div>
+
+  <div class="wrap">
+    <div class="panel">
+      <h2>Picker</h2>
+      <div class="pick-row">
+        <div class="swatch-big" id="swatch"><input type="color" id="picker" value="#C8A96E" /></div>
+        <div class="pick-fields">
+          <div class="fmt-row"><span class="lab">HEX</span><input id="hexIn" value="#C8A96E" spellcheck="false" maxlength="7" /><button class="copy-mini" data-copy="hex">COPY</button></div>
+          <div class="fmt-row"><span class="lab">RGB</span><span class="val" id="rgbOut"></span><button class="copy-mini" data-copy="rgb">COPY</button></div>
+          <div class="fmt-row"><span class="lab">HSL</span><span class="val" id="hslOut"></span><button class="copy-mini" data-copy="hsl">COPY</button></div>
+        </div>
+      </div>
+      <h2 style="margin-top:20px">Saved palette</h2>
+      <div class="pal-row" id="palette"><span class="pal-empty">Save colors to build a palette — stored in this browser.</span></div>
+    </div>
+
+    <div class="panel">
+      <h2>Harmonies — click to use</h2>
+      <div class="sw-label">Complementary</div><div class="sw-row" id="hComp"></div>
+      <div class="sw-label">Analogous</div><div class="sw-row" id="hAna"></div>
+      <div class="sw-label">Triadic</div><div class="sw-row" id="hTri"></div>
+      <div class="sw-label">Tints &amp; shades</div><div class="sw-row" id="hShades"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Contrast checker (WCAG)</h2>
+      <div class="c-inputs">
+        <div class="ci"><input type="color" id="fg" value="#1A1A1A" /><span>Text</span></div>
+        <div class="ci"><input type="color" id="bg" value="#FDFAF5" /><span>Background</span></div>
+        <button class="btn btn-ghost btn-sm" id="swapBtn" title="Swap">⇄</button>
+      </div>
+      <div class="c-sample" id="cSample">
+        <div class="big">Elegant typography</div>
+        <div class="small">Small body text at 13px for fine print and captions.</div>
+      </div>
+      <div class="c-score">
+        <div class="ratio" id="ratio">—</div>
+        <div class="wcag" id="wcag"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Gradient builder</h2>
+      <div class="g-preview" id="gPrev"></div>
+      <div class="g-controls">
+        <div class="ci"><input type="color" id="g1" value="#C8A96E" /></div>
+        <div class="ci"><input type="color" id="g2" value="#FDFAF5" /></div>
+        <select id="gType"><option value="linear">Linear</option><option value="radial">Radial</option></select>
+        <input type="range" id="gAngle" min="0" max="360" value="135" />
+        <span id="gAngleVal" style="font-size:12px;font-weight:700;min-width:34px">135°</span>
+      </div>
+      <div class="css-out"><span class="val" id="gCss"></span><button class="copy-mini" id="gCopy">COPY</button></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    /* ── conversions ── */
+    const hex2rgb = (hex) => {
+      const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+      return m ? [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)] : null;
+    };
+    const rgb2hex = (r, g, b) => '#' + [r, g, b].map(x => Math.round(Math.max(0, Math.min(255, x))).toString(16).padStart(2, '0')).join('').toUpperCase();
+    function rgb2hsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h = 0, s = 0; const l = (max + min) / 2;
+      if (max !== min) {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+        else if (max === g) h = ((b - r) / d + 2) / 6;
+        else h = ((r - g) / d + 4) / 6;
+      }
+      return [h * 360, s * 100, l * 100];
+    }
+    function hsl2rgb(h, s, l) {
+      h = ((h % 360) + 360) % 360 / 360; s /= 100; l /= 100;
+      if (s === 0) { const v = l * 255; return [v, v, v]; }
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+      const f = (t) => {
+        t = ((t % 1) + 1) % 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      };
+      return [f(h + 1 / 3) * 255, f(h) * 255, f(h - 1 / 3) * 255];
+    }
+    const hslHex = (h, s, l) => rgb2hex(...hsl2rgb(h, s, l));
+    function luminance(r, g, b) {
+      const a = [r, g, b].map(v => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    }
+    function contrast(hex1, hex2) {
+      const l1 = luminance(...hex2rgb(hex1)), l2 = luminance(...hex2rgb(hex2));
+      return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+    }
+
+    let toastTimer;
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg; t.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.hidden = true, 1800);
+    }
+    const copyText = async (s) => { await navigator.clipboard.writeText(s); toast(s + ' copied'); };
+
+    /* ── picker + harmonies ── */
+    let current = '#C8A96E';
+    const fmts = { hex: '', rgb: '', hsl: '' };
+
+    function setColor(hex, fromInput) {
+      const rgb = hex2rgb(hex);
+      if (!rgb) return;
+      current = rgb2hex(...rgb);
+      const [h, s, l] = rgb2hsl(...rgb);
+      fmts.hex = current;
+      fmts.rgb = 'rgb(' + rgb.map(Math.round).join(', ') + ')';
+      fmts.hsl = 'hsl(' + Math.round(h) + ', ' + Math.round(s) + '%, ' + Math.round(l) + '%)';
+      $('swatch').style.background = current;
+      $('picker').value = current;
+      if (!fromInput) $('hexIn').value = current;
+      $('rgbOut').textContent = fmts.rgb;
+      $('hslOut').textContent = fmts.hsl;
+
+      renderSwatches('hComp', [hslHex(h + 180, s, l)]);
+      renderSwatches('hAna', [hslHex(h - 30, s, l), current, hslHex(h + 30, s, l)]);
+      renderSwatches('hTri', [current, hslHex(h + 120, s, l), hslHex(h + 240, s, l)]);
+      renderSwatches('hShades', [88, 72, 56, 40, 24].map(L => hslHex(h, s, L)));
+    }
+
+    function renderSwatches(id, colors) {
+      const row = $(id);
+      row.innerHTML = '';
+      for (const c of colors) {
+        const d = document.createElement('div');
+        d.className = 'sw';
+        d.style.background = c;
+        d.title = c;
+        d.onclick = () => { setColor(c); copyText(c); };
+        row.appendChild(d);
+      }
+    }
+
+    $('picker').oninput = (e) => setColor(e.target.value);
+    $('hexIn').oninput = (e) => { if (/^#?[a-f\d]{6}$/i.test(e.target.value)) setColor(e.target.value.startsWith('#') ? e.target.value : '#' + e.target.value, true); };
+    document.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => copyText(fmts[b.dataset.copy]));
+
+    /* ── saved palette ── */
+    const PKEY = 'rocket.palette.v1';
+    let palette = [];
+    try { palette = JSON.parse(localStorage.getItem(PKEY)) || []; } catch {}
+
+    function renderPalette() {
+      const row = $('palette');
+      row.innerHTML = palette.length ? '' : '<span class="pal-empty">Save colors to build a palette — stored in this browser.</span>';
+      for (const c of palette) {
+        const wrap = document.createElement('div');
+        wrap.className = 'pal-chip';
+        const d = document.createElement('div');
+        d.className = 'sw'; d.style.background = c; d.title = c;
+        d.onclick = () => { setColor(c); copyText(c); };
+        const x = document.createElement('div');
+        x.className = 'x'; x.textContent = '✕';
+        x.onclick = (e) => { e.stopPropagation(); palette = palette.filter(p => p !== c); localStorage.setItem(PKEY, JSON.stringify(palette)); renderPalette(); };
+        wrap.append(d, x);
+        row.appendChild(wrap);
+      }
+    }
+    $('saveBtn').onclick = () => {
+      if (!palette.includes(current)) {
+        palette.push(current);
+        localStorage.setItem(PKEY, JSON.stringify(palette));
+        renderPalette();
+        toast(current + ' saved to palette');
+      }
+    };
+
+    /* ── contrast ── */
+    function renderContrast() {
+      const fg = $('fg').value, bg = $('bg').value;
+      const r = contrast(fg, bg);
+      $('cSample').style.background = bg;
+      $('cSample').style.color = fg;
+      $('ratio').textContent = r.toFixed(2) + ':1';
+      const checks = [
+        ['AA normal', r >= 4.5], ['AA large', r >= 3],
+        ['AAA normal', r >= 7], ['AAA large', r >= 4.5],
+      ];
+      $('wcag').innerHTML = checks.map(([n, ok]) =>
+        '<span class="' + (ok ? 'pass' : 'failb') + '">' + n + (ok ? ' ✓' : ' ✕') + '</span>').join('');
+    }
+    $('fg').oninput = renderContrast;
+    $('bg').oninput = renderContrast;
+    $('swapBtn').onclick = () => { const t = $('fg').value; $('fg').value = $('bg').value; $('bg').value = t; renderContrast(); };
+
+    /* ── gradient ── */
+    function renderGradient() {
+      const t = $('gType').value, a = $('gAngle').value, c1 = $('g1').value, c2 = $('g2').value;
+      $('gAngleVal').textContent = a + '°';
+      $('gAngle').style.opacity = t === 'radial' ? 0.35 : 1;
+      const css = t === 'linear'
+        ? 'linear-gradient(' + a + 'deg, ' + c1 + ', ' + c2 + ')'
+        : 'radial-gradient(circle, ' + c1 + ', ' + c2 + ')';
+      $('gPrev').style.background = css;
+      $('gCss').textContent = 'background: ' + css + ';';
+    }
+    ['g1', 'g2', 'gType', 'gAngle'].forEach(id => $(id).oninput = renderGradient);
+    $('gCopy').onclick = () => copyText($('gCss').textContent);
+
+    setColor(current);
+    renderPalette();
+    renderContrast();
+    renderGradient();
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

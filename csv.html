@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>CSV &amp; Excel Viewer Online — Sort, Filter, Clean, Convert | Rocket Tools</title>
+  <meta name="description" content="Open CSV and Excel files instantly in your browser. Sort, filter, deduplicate and clean data, see column stats, and export CSV or JSON — no uploads." />
+  <link rel="canonical" href="https://rocket-tools.app/csv.html" />
+  <meta property="og:site_name" content="Rocket Tools" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="CSV &amp; Excel Viewer Online — Sort, Filter, Clean, Convert" />
+  <meta property="og:description" content="Open CSV and Excel files instantly. Sort, filter, clean and export — your data never leaves your device." />
+  <meta property="og:url" content="https://rocket-tools.app/csv.html" />
+  <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta name="theme-color" content="#FDFAF5" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"CSV Studio","url":"https://rocket-tools.app/csv.html","applicationCategory":"BusinessApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Client-side CSV and Excel viewer with sorting, filtering, cleaning tools and CSV/JSON export."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"CSV Studio","item":"https://rocket-tools.app/csv.html"}]}]}</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 22px 20px 50px; }
+    .dropzone {
+      border: 2px dashed var(--gold-soft);
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 40px 24px;
+      text-align: center; cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: var(--shadow);
+    }
+    .dropzone:hover, .dropzone.drag { border-color: var(--gold); transform: translateY(-2px); background: #F4EFE4; }
+    .dz-title { font-weight: 700; font-size: 15.5px; }
+    .dz-hint { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+
+    .bar { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; margin: 16px 0; }
+    .bar .right { margin-left: auto; display: flex; gap: 9px; flex-wrap: wrap; }
+    .bar input.field { padding: 9px 14px; font-size: 13px; width: 200px; }
+    .bar select { font-family: inherit; font-size: 12.5px; font-weight: 600; background: var(--bg); border: 1.5px solid var(--line); border-radius: 10px; padding: 9px 11px; color: var(--ink); }
+    .filemeta { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+
+    .tablebox {
+      background: var(--card);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: var(--shadow);
+      overflow: auto;
+      max-height: calc(100vh - 290px);
+    }
+    table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+    thead th {
+      position: sticky; top: 0;
+      background: var(--card);
+      font-weight: 700;
+      text-align: left;
+      padding: 11px 14px;
+      border-bottom: 2px solid var(--line);
+      white-space: nowrap;
+      cursor: pointer;
+      user-select: none;
+    }
+    thead th:hover { color: #8A6E3A; }
+    thead th .dir { color: var(--gold); margin-left: 4px; }
+    tbody td {
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--line);
+      background: var(--bg);
+      white-space: nowrap;
+      max-width: 320px; overflow: hidden; text-overflow: ellipsis;
+      font-variant-numeric: tabular-nums;
+    }
+    tbody tr:hover td { background: #F7F2E9; }
+    td.empty-cell { color: var(--gold-soft); font-style: italic; }
+
+    .pager { display: flex; align-items: center; gap: 12px; justify-content: center; padding: 14px 0 0; font-size: 12.5px; color: var(--muted); font-weight: 600; }
+
+    .stats {
+      margin-top: 16px;
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 10px;
+    }
+    .stat {
+      background: var(--card); border-radius: 14px; padding: 12px 15px;
+      border: 1px solid rgba(255,255,255,0.6);
+      font-size: 11.5px; color: var(--muted);
+    }
+    .stat b { display: block; font-size: 12.5px; color: var(--ink); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stat .t { color: var(--gold); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="nav-home" href="./"><svg width="21" height="21" viewBox="0 0 512 512"><circle cx="256" cy="256" r="240" fill="#C8A96E"/><path d="M256 96c52 38 76 96 76 156 0 22-3 43-10 62h-132c-7-19-10-40-10-62 0-60 24-118 76-156z" fill="#FDFAF5"/><circle cx="256" cy="222" r="26" fill="#C8A96E"/><path d="M190 314l-44 56 62-14M322 314l44 56-62-14" fill="#FDFAF5"/><path d="M256 330c14 18 14 48 0 76-14-28-14-58 0-76z" fill="#F0B45C"/></svg><span>Rocket Tools</span></a>
+    <span class="nav-sep">/</span>
+    <h1 class="nav-title">CSV Studio</h1>
+    <div class="spacer"></div>
+    <span class="hint">files stay on your device</span>
+  </div>
+
+  <div class="wrap">
+    <div class="dropzone" id="dz">
+      <div class="dz-title">Drop a CSV or Excel file</div>
+      <div class="dz-hint">.csv · .tsv · .xlsx · .xls — view, sort, clean and re-export without uploading</div>
+    </div>
+    <input type="file" id="picker" accept=".csv,.tsv,.txt,.xlsx,.xls" hidden />
+
+    <div id="workspace" hidden>
+      <div class="bar">
+        <span class="filemeta" id="fmeta"></span>
+        <select id="sheetSel" hidden></select>
+        <input class="field" id="search" type="search" placeholder="Filter rows…" />
+        <div class="right">
+          <button class="btn btn-ghost btn-sm" data-clean="trim">Trim spaces</button>
+          <button class="btn btn-ghost btn-sm" data-clean="dedupe">Dedupe rows</button>
+          <button class="btn btn-ghost btn-sm" data-clean="dropEmptyRows">Drop empty rows</button>
+          <button class="btn btn-ghost btn-sm" data-clean="dropEmptyCols">Drop empty columns</button>
+          <button class="btn btn-ghost btn-sm" id="undoBtn" disabled>Undo</button>
+          <button class="btn btn-ghost btn-sm" id="statsBtn">Stats</button>
+          <button class="btn btn-gold btn-sm" id="exportCsv">⬇ CSV</button>
+          <button class="btn btn-dark btn-sm" id="exportJson">⬇ JSON</button>
+        </div>
+      </div>
+
+      <div class="tablebox"><table id="table"></table></div>
+      <div class="pager" id="pager"></div>
+      <div class="stats" id="stats" hidden></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const PAGE = 100;
+    let wb = null, headers = [], rows = [], fileName = '';
+    let sortCol = -1, sortDir = 1, page = 0, undoStack = [];
+
+    let toastTimer;
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg; t.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.hidden = true, 2400);
+    }
+
+    async function loadFile(file) {
+      fileName = file.name;
+      const data = await file.arrayBuffer();
+      wb = XLSX.read(data, { raw: false, cellDates: true });
+      const sel = $('sheetSel');
+      sel.hidden = wb.SheetNames.length < 2;
+      sel.innerHTML = wb.SheetNames.map(n => '<option>' + n + '</option>').join('');
+      openSheet(wb.SheetNames[0]);
+      $('workspace').hidden = false;
+    }
+
+    function openSheet(name) {
+      const aoa = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, defval: '' });
+      headers = (aoa[0] || []).map((h, i) => String(h || 'Column ' + (i + 1)));
+      rows = aoa.slice(1).map(r => {
+        const row = new Array(headers.length).fill('');
+        r.forEach((v, i) => { if (i < headers.length) row[i] = v == null ? '' : String(v); });
+        return row;
+      });
+      sortCol = -1; page = 0; undoStack = [];
+      $('undoBtn').disabled = true;
+      $('stats').hidden = true;
+      render();
+    }
+
+    function visibleRows() {
+      const q = $('search').value.trim().toLowerCase();
+      let list = rows;
+      if (q) list = rows.filter(r => r.some(c => String(c).toLowerCase().includes(q)));
+      if (sortCol >= 0) {
+        list = [...list].sort((a, b) => {
+          const x = a[sortCol], y = b[sortCol];
+          const nx = parseFloat(x), ny = parseFloat(y);
+          if (!isNaN(nx) && !isNaN(ny) && String(nx) == String(x).trim() && String(ny) == String(y).trim()) return (nx - ny) * sortDir;
+          return String(x).localeCompare(String(y)) * sortDir;
+        });
+      }
+      return list;
+    }
+
+    function render() {
+      const list = visibleRows();
+      const pageCount = Math.max(1, Math.ceil(list.length / PAGE));
+      page = Math.min(page, pageCount - 1);
+      const slice = list.slice(page * PAGE, page * PAGE + PAGE);
+
+      const thead = '<thead><tr>' + headers.map((h, i) =>
+        '<th data-col="' + i + '">' + escapeHtml(h) +
+        (sortCol === i ? '<span class="dir">' + (sortDir > 0 ? '▲' : '▼') + '</span>' : '') +
+        '</th>').join('') + '</tr></thead>';
+      const tbody = '<tbody>' + slice.map(r =>
+        '<tr>' + r.map(c =>
+          c === '' ? '<td class="empty-cell">empty</td>' : '<td>' + escapeHtml(String(c)) + '</td>'
+        ).join('') + '</tr>').join('') + '</tbody>';
+      $('table').innerHTML = thead + tbody;
+
+      document.querySelectorAll('th[data-col]').forEach(th => th.onclick = () => {
+        const c = +th.dataset.col;
+        if (sortCol === c) sortDir *= -1; else { sortCol = c; sortDir = 1; }
+        render();
+      });
+
+      $('fmeta').textContent = fileName + ' · ' + rows.length.toLocaleString() + ' rows × ' + headers.length + ' cols' +
+        (list.length !== rows.length ? ' · ' + list.length.toLocaleString() + ' match' : '');
+
+      $('pager').innerHTML = pageCount <= 1 ? '' :
+        '<button class="btn btn-ghost btn-sm" id="prev" ' + (page === 0 ? 'disabled' : '') + '>←</button>' +
+        '<span>Page ' + (page + 1) + ' of ' + pageCount + '</span>' +
+        '<button class="btn btn-ghost btn-sm" id="next" ' + (page >= pageCount - 1 ? 'disabled' : '') + '>→</button>';
+      const prev = $('prev'), next = $('next');
+      if (prev) prev.onclick = () => { page--; render(); };
+      if (next) next.onclick = () => { page++; render(); };
+
+      if (!$('stats').hidden) renderStats();
+    }
+
+    const escapeHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    function snapshot() {
+      undoStack.push({ headers: [...headers], rows: rows.map(r => [...r]) });
+      if (undoStack.length > 5) undoStack.shift();
+      $('undoBtn').disabled = false;
+    }
+
+    const cleaners = {
+      trim() {
+        snapshot();
+        let n = 0;
+        rows.forEach(r => r.forEach((c, i) => {
+          const t = String(c).replace(/\s+/g, ' ').trim();
+          if (t !== c) { r[i] = t; n++; }
+        }));
+        toast(n + ' cells trimmed');
+      },
+      dedupe() {
+        snapshot();
+        const seen = new Set();
+        const before = rows.length;
+        rows = rows.filter(r => {
+          const k = JSON.stringify(r);
+          if (seen.has(k)) return false;
+          seen.add(k); return true;
+        });
+        toast((before - rows.length) + ' duplicate rows removed');
+      },
+      dropEmptyRows() {
+        snapshot();
+        const before = rows.length;
+        rows = rows.filter(r => r.some(c => String(c).trim() !== ''));
+        toast((before - rows.length) + ' empty rows removed');
+      },
+      dropEmptyCols() {
+        snapshot();
+        const keep = headers.map((_, i) => rows.some(r => String(r[i]).trim() !== ''));
+        const removed = keep.filter(k => !k).length;
+        headers = headers.filter((_, i) => keep[i]);
+        rows = rows.map(r => r.filter((_, i) => keep[i]));
+        toast(removed + ' empty columns removed');
+      },
+    };
+
+    function renderStats() {
+      const box = $('stats');
+      box.innerHTML = headers.map((h, i) => {
+        const vals = rows.map(r => String(r[i]).trim());
+        const nonEmpty = vals.filter(v => v !== '');
+        const uniq = new Set(nonEmpty).size;
+        const nums = nonEmpty.map(parseFloat).filter(n => !isNaN(n));
+        const numeric = nums.length > 0 && nums.length >= nonEmpty.length * 0.9;
+        let extra = '';
+        if (numeric && nums.length) {
+          const min = Math.min(...nums), max = Math.max(...nums);
+          const avg = nums.reduce((a, b) => a + b, 0) / nums.length;
+          extra = '<br>min ' + round(min) + ' · max ' + round(max) + ' · avg ' + round(avg);
+        }
+        return '<div class="stat"><b>' + escapeHtml(h) + '</b>' +
+          '<span class="t">' + (numeric ? 'number' : 'text') + '</span> · ' +
+          nonEmpty.length + ' filled · ' + uniq + ' unique · ' + (vals.length - nonEmpty.length) + ' empty' +
+          extra + '</div>';
+      }).join('');
+    }
+    const round = (n) => Math.abs(n) >= 100 ? Math.round(n).toLocaleString() : +n.toFixed(2);
+
+    function download(name, content, type) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([content], { type }));
+      a.download = name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    }
+
+    /* wiring */
+    const dz = $('dz');
+    dz.onclick = () => $('picker').click();
+    dz.ondragover = (e) => { e.preventDefault(); dz.classList.add('drag'); };
+    dz.ondragleave = () => dz.classList.remove('drag');
+    dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove('drag'); e.dataTransfer.files[0] && loadFile(e.dataTransfer.files[0]); };
+    $('picker').onchange = (e) => { e.target.files[0] && loadFile(e.target.files[0]); e.target.value = ''; };
+    $('sheetSel').onchange = (e) => openSheet(e.target.value);
+    $('search').oninput = () => { page = 0; render(); };
+
+    document.querySelectorAll('[data-clean]').forEach(b => b.onclick = () => { cleaners[b.dataset.clean](); render(); });
+    $('undoBtn').onclick = () => {
+      const s = undoStack.pop();
+      if (s) { headers = s.headers; rows = s.rows; render(); toast('Undone'); }
+      $('undoBtn').disabled = undoStack.length === 0;
+    };
+    $('statsBtn').onclick = () => { const s = $('stats'); s.hidden = !s.hidden; if (!s.hidden) renderStats(); };
+
+    $('exportCsv').onclick = () => {
+      const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+      download(fileName.replace(/\.[^.]+$/, '') + '-clean.csv', XLSX.utils.sheet_to_csv(ws), 'text/csv');
+      toast('CSV exported');
+    };
+    $('exportJson').onclick = () => {
+      const objs = rows.map(r => Object.fromEntries(headers.map((h, i) => [h, r[i]])));
+      download(fileName.replace(/\.[^.]+$/, '') + '.json', JSON.stringify(objs, null, 2), 'application/json');
+      toast('JSON exported');
+    };
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

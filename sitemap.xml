@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://rocket-tools.app/</loc><priority>1.0</priority></url>
+  <url><loc>https://rocket-tools.app/meet.html</loc><priority>0.9</priority></url>
+  <url><loc>https://rocket-tools.app/peerdrop/</loc><priority>0.9</priority></url>
+  <url><loc>https://rocket-tools.app/whiteboard.html</loc><priority>0.8</priority></url>
+  <url><loc>https://rocket-tools.app/notes.html</loc><priority>0.8</priority></url>
+  <url><loc>https://rocket-tools.app/todo.html</loc><priority>0.8</priority></url>
+  <url><loc>https://rocket-tools.app/json.html</loc><priority>0.8</priority></url>
+  <url><loc>https://rocket-tools.app/markdown.html</loc><priority>0.8</priority></url>
+  <url><loc>https://rocket-tools.app/image.html</loc><priority>0.8</priority></url>
+  <url><loc>https://rocket-tools.app/pdf.html</loc><priority>0.8</priority></url>
+  <url><loc>https://rocket-tools.app/color.html</loc><priority>0.8</priority></url>
+  <url><loc>https://rocket-tools.app/csv.html</loc><priority>0.8</priority></url>
+  <url><loc>https://rocket-tools.app/qr.html</loc><priority>0.8</priority></url>
+  <url><loc>https://rocket-tools.app/record.html</loc><priority>0.8</priority></url>
+  <url><loc>https://rocket-tools.app/sandbox.html</loc><priority>0.8</priority></url>
+  <url><loc>https://rocket-tools.app/diagram.html</loc><priority>0.8</priority></url>
+</urlset>

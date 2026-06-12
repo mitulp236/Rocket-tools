@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Markdown Editor with Live Preview — Write README Online | Rocket Tools</title>
+  <meta name="description" content="Write Markdown and README files with a rich toolbar and live side-by-side preview. Autosaves locally, exports .md or styled HTML." />
+  <link rel="canonical" href="https://rocket-tools.app/markdown.html" />
+  <meta property="og:site_name" content="Rocket Tools" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Markdown Editor with Live Preview — Write README Online" />
+  <meta property="og:description" content="Rich Markdown toolbar with live side-by-side preview. Autosaves locally, exports .md or styled HTML." />
+  <meta property="og:url" content="https://rocket-tools.app/markdown.html" />
+  <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta name="theme-color" content="#FDFAF5" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"Markdown Studio","url":"https://rocket-tools.app/markdown.html","applicationCategory":"ProductivityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Markdown editor with toolbar, live preview, autosave and .md/HTML export."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"Markdown","item":"https://rocket-tools.app/markdown.html"}]}]}</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/easymde@2.18.0/dist/easymde.min.css" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    .wrap {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 18px 18px 30px;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 55px);
+    }
+    .EasyMDEContainer { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+    /* ── re-skin EasyMDE to the cream theme ── */
+    .editor-toolbar {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px 16px 0 0;
+      opacity: 1;
+      padding: 7px 10px;
+    }
+    .editor-toolbar button {
+      color: var(--ink) !important;
+      border-radius: 8px;
+      border: 1px solid transparent;
+    }
+    .editor-toolbar button:hover,
+    .editor-toolbar button.active {
+      background: var(--bg);
+      border-color: var(--line);
+    }
+    .editor-toolbar button.active { color: var(--gold) !important; }
+    .editor-toolbar i.separator { border-left: 1px solid var(--line); border-right: none; }
+
+    .EasyMDEContainer .CodeMirror {
+      flex: 1;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-top: none;
+      border-radius: 0 0 16px 16px;
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 14px;
+      line-height: 1.7;
+      padding: 12px 8px;
+      height: auto;
+    }
+    .EasyMDEContainer .CodeMirror-cursor { border-color: var(--gold); border-width: 2px; }
+    .EasyMDEContainer .CodeMirror-selected { background: rgba(200, 169, 110, 0.25) !important; }
+    .EasyMDEContainer .CodeMirror-scroll { min-height: 0 !important; }
+    .cm-s-easymde .cm-header { color: var(--ink); }
+    .cm-s-easymde .cm-header-1 { font-size: 1.5em; }
+    .cm-s-easymde .cm-header-2 { font-size: 1.3em; }
+    .cm-s-easymde .cm-link { color: #8A6E3A; }
+    .cm-s-easymde .cm-url { color: var(--muted); }
+    .cm-s-easymde .cm-quote { color: var(--muted); font-style: italic; }
+    .cm-s-easymde .cm-comment { background: var(--card); border-radius: 3px; }
+
+    .editor-statusbar { color: var(--muted); font-size: 11.5px; padding: 8px 4px 0; }
+
+    /* ── preview: GitHub-README look, cream edition ── */
+    .editor-preview, .editor-preview-side {
+      background: var(--bg);
+      border-color: var(--line);
+      padding: 28px 34px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--ink);
+    }
+    .editor-preview-side { border-radius: 0 0 16px 0; }
+    .editor-preview h1, .editor-preview-side h1,
+    .editor-preview h2, .editor-preview-side h2 {
+      letter-spacing: -0.02em;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 0.3em;
+      margin: 1.2em 0 0.6em;
+    }
+    .editor-preview h1:first-child, .editor-preview-side h1:first-child { margin-top: 0; }
+    .editor-preview h3, .editor-preview-side h3 { margin: 1.1em 0 0.5em; }
+    .editor-preview p, .editor-preview-side p { margin: 0.65em 0; }
+    .editor-preview a, .editor-preview-side a { color: #8A6E3A; text-decoration-color: var(--gold-soft); }
+    .editor-preview code, .editor-preview-side code {
+      background: var(--card);
+      border-radius: 6px;
+      padding: 0.15em 0.4em;
+      font-family: var(--mono);
+      font-size: 0.88em;
+    }
+    .editor-preview pre, .editor-preview-side pre {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px;
+      overflow-x: auto;
+      margin: 0.8em 0;
+    }
+    .editor-preview pre code, .editor-preview-side pre code { background: none; padding: 0; }
+    .editor-preview blockquote, .editor-preview-side blockquote {
+      border-left: 3px solid var(--gold);
+      background: var(--card);
+      border-radius: 0 10px 10px 0;
+      margin: 0.8em 0;
+      padding: 8px 16px;
+      color: #5d574c;
+    }
+    .editor-preview table, .editor-preview-side table { border-collapse: collapse; margin: 0.8em 0; }
+    .editor-preview th, .editor-preview-side th,
+    .editor-preview td, .editor-preview-side td {
+      border: 1px solid var(--line);
+      padding: 7px 13px;
+    }
+    .editor-preview th, .editor-preview-side th { background: var(--card); font-weight: 700; }
+    .editor-preview hr, .editor-preview-side hr { border: none; border-top: 1px solid var(--line); margin: 1.4em 0; }
+    .editor-preview ul, .editor-preview-side ul,
+    .editor-preview ol, .editor-preview-side ol { padding-left: 1.5em; margin: 0.65em 0; }
+    .editor-preview img, .editor-preview-side img { max-width: 100%; border-radius: 10px; }
+
+    .EasyMDEContainer.sided .CodeMirror { border-radius: 0 0 0 16px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="nav-home" href="./"><svg width="21" height="21" viewBox="0 0 512 512"><circle cx="256" cy="256" r="240" fill="#C8A96E"/><path d="M256 96c52 38 76 96 76 156 0 22-3 43-10 62h-132c-7-19-10-40-10-62 0-60 24-118 76-156z" fill="#FDFAF5"/><circle cx="256" cy="222" r="26" fill="#C8A96E"/><path d="M190 314l-44 56 62-14M322 314l44 56-62-14" fill="#FDFAF5"/><path d="M256 330c14 18 14 48 0 76-14-28-14-58 0-76z" fill="#F0B45C"/></svg><span>Rocket Tools</span></a>
+    <span class="nav-sep">/</span>
+    <h1 class="nav-title">Markdown</h1>
+    <div class="spacer"></div>
+    <span class="hint">autosaves to this browser</span>
+    <button class="btn btn-ghost btn-sm" id="copyBtn">Copy .md</button>
+    <button class="btn btn-ghost btn-sm" id="htmlBtn">Export HTML</button>
+    <button class="btn btn-gold btn-sm" id="dlBtn">Download .md</button>
+  </div>
+
+  <div class="wrap">
+    <textarea id="md"># Project Name
+
+> One-line description of what this project does and who it's for.
+
+![badge](https://img.shields.io/badge/status-elegant-C8A96E)
+
+## Features
+
+- **Fast** — runs entirely in your browser
+- **Private** — nothing ever leaves your device
+- *Lightweight* — no build step required
+
+## Installation
+
+```bash
+git clone https://github.com/you/project.git
+cd project && npm install
+```
+
+## Usage
+
+| Command | Description |
+|---|---|
+| `npm start` | Start the dev server |
+| `npm test` | Run the test suite |
+
+## License
+
+MIT — see [LICENSE](LICENSE) for details.
+</textarea>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="https://unpkg.com/easymde@2.18.0/dist/easymde.min.js"></script>
+  <script src="https://unpkg.com/marked@12.0.2/marked.min.js"></script>
+  <script>
+    const editor = new EasyMDE({
+      element: document.getElementById('md'),
+      autofocus: false,
+      spellChecker: false,
+      sideBySideFullscreen: false,
+      lineNumbers: false,
+      status: ['lines', 'words', 'cursor'],
+      autosave: { enabled: true, uniqueId: 'rocket.markdown.v1', delay: 700, text: 'Saved ' },
+      previewRender: (text) => marked.parse(text, { breaks: false, gfm: true }),
+      toolbar: [
+        'bold', 'italic', 'strikethrough', '|',
+        'heading-1', 'heading-2', 'heading-3', '|',
+        'quote', 'code', 'unordered-list', 'ordered-list', 'table', 'horizontal-rule', '|',
+        'link', 'image', '|',
+        'preview', 'side-by-side', 'fullscreen', '|',
+        'undo', 'redo', '|', 'guide',
+      ],
+      renderingConfig: { codeSyntaxHighlighting: false },
+    });
+
+    // open side-by-side preview by default on wide screens
+    if (window.innerWidth > 900 && !editor.isSideBySideActive()) {
+      EasyMDE.toggleSideBySide(editor);
+    }
+
+    const toastEl = document.getElementById('toast');
+    let toastTimer;
+    function toast(msg) {
+      toastEl.textContent = msg;
+      toastEl.hidden = false;
+      toastEl.style.animation = 'none';
+      void toastEl.offsetWidth;
+      toastEl.style.animation = '';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.hidden = true, 2000);
+    }
+
+    function download(name, content, type) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([content], { type }));
+      a.download = name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    }
+
+    document.getElementById('copyBtn').onclick = async () => {
+      await navigator.clipboard.writeText(editor.value());
+      toast('Markdown copied');
+    };
+
+    document.getElementById('dlBtn').onclick = () => {
+      download('README.md', editor.value(), 'text/markdown');
+      toast('README.md downloaded');
+    };
+
+    document.getElementById('htmlBtn').onclick = () => {
+      const body = marked.parse(editor.value(), { gfm: true });
+      const doc = '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">' +
+        '<title>README</title><style>' +
+        'body{max-width:760px;margin:40px auto;padding:0 24px;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;' +
+        'background:#FDFAF5;color:#1A1A1A;line-height:1.7}' +
+        'h1,h2{border-bottom:1px solid #E6DFD2;padding-bottom:.3em;letter-spacing:-.02em}' +
+        'code{background:#F0EBE1;border-radius:6px;padding:.15em .4em;font-size:.9em}' +
+        'pre{background:#F0EBE1;border:1px solid #E6DFD2;border-radius:12px;padding:14px 16px;overflow-x:auto}' +
+        'pre code{background:none;padding:0}' +
+        'blockquote{border-left:3px solid #C8A96E;background:#F0EBE1;border-radius:0 10px 10px 0;margin:.8em 0;padding:8px 16px;color:#5d574c}' +
+        'table{border-collapse:collapse}th,td{border:1px solid #E6DFD2;padding:7px 13px}th{background:#F0EBE1}' +
+        'a{color:#8A6E3A}img{max-width:100%;border-radius:10px}' +
+        '</style></head><body>' + body + '</body></html>';
+      download('README.html', doc, 'text/html');
+      toast('README.html exported');
+    };
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

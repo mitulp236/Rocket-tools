@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Code Sandbox — HTML, CSS &amp; JS Playground with Live Preview | Rocket Tools</title>
+  <meta name="description" content="Write HTML, CSS and JavaScript with a live preview and captured console. A tiny CodePen that runs entirely in your browser and exports a single file." />
+  <link rel="canonical" href="https://rocket-tools.app/sandbox.html" />
+  <meta property="og:site_name" content="Rocket Tools" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Code Sandbox — HTML, CSS &amp; JS Playground with Live Preview" />
+  <meta property="og:description" content="HTML, CSS and JS with live preview and console — a tiny CodePen that runs entirely in your browser." />
+  <meta property="og:url" content="https://rocket-tools.app/sandbox.html" />
+  <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta name="theme-color" content="#FDFAF5" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"Code Sandbox","url":"https://rocket-tools.app/sandbox.html","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"In-browser HTML/CSS/JS playground with live preview, console capture and single-file export."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"Code Sandbox","item":"https://rocket-tools.app/sandbox.html"}]}]}</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/codemirror@5.65.16/lib/codemirror.css" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    .wrap {
+      max-width: 1400px; margin: 0 auto;
+      padding: 16px 16px 24px;
+      height: calc(100vh - 55px);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+    @media (max-width: 900px) {
+      .wrap { grid-template-columns: 1fr; height: auto; min-height: calc(100vh - 55px); }
+      .left, .right { min-height: 60vh; }
+    }
+    .left, .right { display: flex; flex-direction: column; gap: 14px; min-height: 0; min-width: 0; }
+
+    .pane {
+      background: var(--card);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: var(--shadow);
+      display: flex; flex-direction: column;
+      overflow: hidden; min-height: 0;
+    }
+    .pane-head {
+      display: flex; align-items: center; gap: 6px;
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+    .pane-head .label {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.11em;
+      text-transform: uppercase; color: var(--muted);
+      padding: 0 6px;
+    }
+    .pane-head .right { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+
+    .tab {
+      border: 1.5px solid transparent;
+      background: transparent;
+      font-family: inherit; font-size: 12.5px; font-weight: 700;
+      color: var(--muted);
+      padding: 7px 16px; border-radius: 99px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab:hover { color: var(--ink); }
+    .tab.active { background: var(--bg); color: var(--ink); border-color: var(--line); box-shadow: 0 3px 9px -4px rgba(26,26,26,0.18); }
+    .tab .lang-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 7px; vertical-align: 1px; }
+
+    .editor-host { flex: 1; min-height: 0; position: relative; }
+    .editor-host .CodeMirror {
+      position: absolute; inset: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--mono);
+      font-size: 13.5px;
+      line-height: 1.65;
+      padding: 8px 4px;
+    }
+    .CodeMirror-cursor { border-left: 2px solid var(--gold) !important; }
+    .CodeMirror-selected { background: rgba(200,169,110,0.22) !important; }
+    .CodeMirror-gutters { background: var(--bg); border-right: 1px solid var(--line); }
+    .CodeMirror-linenumber { color: var(--gold-soft); font-size: 11px; }
+    .cm-s-default .cm-tag { color: #8A6E3A; }
+    .cm-s-default .cm-attribute { color: #B05B4C; }
+    .cm-s-default .cm-string, .cm-s-default .cm-string-2 { color: #4C7A4C; }
+    .cm-s-default .cm-keyword { color: #9E7F3E; font-weight: 600; }
+    .cm-s-default .cm-number, .cm-s-default .cm-atom { color: #B05B4C; }
+    .cm-s-default .cm-comment { color: #A39B8D; font-style: italic; }
+    .cm-s-default .cm-property { color: #1A1A1A; }
+    .cm-s-default .cm-variable-2, .cm-s-default .cm-def { color: #5B6E8F; }
+    .cm-s-default .cm-qualifier, .cm-s-default .cm-builtin { color: #8A6E3A; }
+
+    .preview-pane { flex: 1.6; }
+    iframe#frame { flex: 1; border: none; background: #fff; width: 100%; }
+
+    .console-pane { flex: 1; max-height: 220px; }
+    #console {
+      flex: 1; overflow-y: auto;
+      background: var(--bg);
+      font-family: var(--mono); font-size: 12px; line-height: 1.6;
+      padding: 10px 14px;
+    }
+    #console .line { padding: 1.5px 0; border-bottom: 1px dashed rgba(230,223,210,0.6); word-break: break-word; }
+    #console .line.warn { color: #9E7F3E; }
+    #console .line.error { color: var(--bad); }
+    #console .line.info { color: #5B6E8F; }
+    #console .empty { color: var(--muted); font-style: italic; }
+    .count-badge {
+      font-size: 10px; font-weight: 700;
+      background: var(--bg); color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 99px; padding: 2px 8px;
+    }
+    .auto-label {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 600; color: var(--muted);
+      cursor: pointer; user-select: none;
+      margin-right: 4px;
+    }
+    .auto-label input { accent-color: #C8A96E; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="nav-home" href="./"><svg width="21" height="21" viewBox="0 0 512 512"><circle cx="256" cy="256" r="240" fill="#C8A96E"/><path d="M256 96c52 38 76 96 76 156 0 22-3 43-10 62h-132c-7-19-10-40-10-62 0-60 24-118 76-156z" fill="#FDFAF5"/><circle cx="256" cy="222" r="26" fill="#C8A96E"/><path d="M190 314l-44 56 62-14M322 314l44 56-62-14" fill="#FDFAF5"/><path d="M256 330c14 18 14 48 0 76-14-28-14-58 0-76z" fill="#F0B45C"/></svg><span>Rocket Tools</span></a>
+    <span class="nav-sep">/</span>
+    <h1 class="nav-title">Code Sandbox</h1>
+    <div class="spacer"></div>
+    <label class="auto-label"><input type="checkbox" id="autorun" checked /> Auto-run</label>
+    <button class="btn btn-ghost btn-sm" id="resetBtn">Reset</button>
+    <button class="btn btn-ghost btn-sm" id="dlBtn">⬇ .html</button>
+    <button class="btn btn-gold btn-sm" id="runBtn">▶ Run</button>
+  </div>
+
+  <div class="wrap">
+    <div class="left">
+      <div class="pane" style="flex:1">
+        <div class="pane-head">
+          <button class="tab active" data-tab="html"><span class="lang-dot" style="background:#B05B4C"></span>HTML</button>
+          <button class="tab" data-tab="css"><span class="lang-dot" style="background:#5B6E8F"></span>CSS</button>
+          <button class="tab" data-tab="js"><span class="lang-dot" style="background:#9E7F3E"></span>JS</button>
+          <div class="right"><span class="label" id="saveState">saved locally</span></div>
+        </div>
+        <div class="editor-host" id="host"></div>
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="pane preview-pane">
+        <div class="pane-head"><span class="label">Preview</span>
+          <div class="right"><button class="btn btn-ghost btn-sm" id="popBtn">Open in tab</button></div>
+        </div>
+        <iframe id="frame" sandbox="allow-scripts allow-modals allow-forms allow-popups"></iframe>
+      </div>
+      <div class="pane console-pane">
+        <div class="pane-head"><span class="label">Console</span><span class="count-badge" id="logCount">0</span>
+          <div class="right"><button class="btn btn-ghost btn-sm" id="clearLog">Clear</button></div>
+        </div>
+        <div id="console"><span class="empty">console.log output appears here…</span></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/codemirror@5.65.16/lib/codemirror.js"></script>
+  <script src="https://unpkg.com/codemirror@5.65.16/mode/xml/xml.js"></script>
+  <script src="https://unpkg.com/codemirror@5.65.16/mode/css/css.js"></script>
+  <script src="https://unpkg.com/codemirror@5.65.16/mode/javascript/javascript.js"></script>
+  <script src="https://unpkg.com/codemirror@5.65.16/mode/htmlmixed/htmlmixed.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const KEY = 'rocket.sandbox.v1';
+
+    const STARTER = {
+      html: '<div class="card">\n  <h1>Hello, Sandbox</h1>\n  <p>Edit HTML, CSS and JS — the preview updates live.</p>\n  <button id="btn">Click me</button>\n</div>',
+      css: 'body {\n  display: grid;\n  place-items: center;\n  min-height: 100vh;\n  margin: 0;\n  background: #FDFAF5;\n  font-family: system-ui, sans-serif;\n}\n\n.card {\n  background: #F0EBE1;\n  padding: 40px 48px;\n  border-radius: 22px;\n  text-align: center;\n  box-shadow: 0 18px 50px -22px rgba(26,26,26,.25);\n}\n\nh1 { color: #C8A96E; margin: 0 0 8px; }\np { color: #555; }\n\nbutton {\n  background: #1A1A1A;\n  color: #FDFAF5;\n  border: none;\n  padding: 12px 26px;\n  border-radius: 12px;\n  font-size: 15px;\n  cursor: pointer;\n}',
+      js: 'const btn = document.getElementById("btn");\nlet clicks = 0;\n\nbtn.addEventListener("click", () => {\n  clicks++;\n  console.log("Clicked", clicks, "time" + (clicks > 1 ? "s" : ""));\n  btn.textContent = "Clicked × " + clicks;\n});\n\nconsole.log("Sandbox ready ✨");',
+    };
+
+    let code;
+    try { code = JSON.parse(localStorage.getItem(KEY)) || { ...STARTER }; }
+    catch { code = { ...STARTER }; }
+
+    /* ── editors ── */
+    const modes = { html: 'htmlmixed', css: 'css', js: 'javascript' };
+    const editors = {};
+    let active = 'html';
+
+    for (const k of ['html', 'css', 'js']) {
+      editors[k] = CodeMirror($('host'), {
+        value: code[k],
+        mode: modes[k],
+        lineNumbers: true,
+        lineWrapping: true,
+        tabSize: 2,
+        viewportMargin: Infinity,
+      });
+      editors[k].getWrapperElement().style.display = k === 'html' ? '' : 'none';
+      editors[k].on('change', () => {
+        code[k] = editors[k].getValue();
+        scheduleSave();
+        if ($('autorun').checked) scheduleRun();
+      });
+    }
+
+    document.querySelectorAll('.tab').forEach(t => t.onclick = () => {
+      active = t.dataset.tab;
+      document.querySelectorAll('.tab').forEach(x => x.classList.toggle('active', x === t));
+      for (const k of ['html', 'css', 'js']) editors[k].getWrapperElement().style.display = k === active ? '' : 'none';
+      editors[active].refresh();
+      editors[active].focus();
+    });
+
+    let saveTimer;
+    function scheduleSave() {
+      $('saveState').textContent = 'saving…';
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => {
+        localStorage.setItem(KEY, JSON.stringify(code));
+        $('saveState').textContent = 'saved locally';
+      }, 500);
+    }
+
+    /* ── build + run ── */
+    const HOOK = '<scr' + 'ipt>(function(){' +
+      'var send=function(level,args){try{parent.postMessage({__sb:1,level:level,msg:Array.prototype.map.call(args,function(a){' +
+      'if(a instanceof Error)return a.message;' +
+      'if(typeof a==="object"&&a!==null){try{return JSON.stringify(a)}catch(e){return String(a)}}' +
+      'return String(a)}).join(" ")},"*")}catch(e){}};' +
+      '["log","warn","error","info"].forEach(function(l){var o=console[l];console[l]=function(){send(l,arguments);o.apply(console,arguments)}});' +
+      'window.addEventListener("error",function(e){send("error",[e.message+" (line "+e.lineno+")"])});' +
+      'window.addEventListener("unhandledrejection",function(e){send("error",["Unhandled promise rejection: "+e.reason])});' +
+      '})();</scr' + 'ipt>';
+
+    function buildDoc(forExport) {
+      return '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="utf-8">\n' +
+        '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+        (forExport ? '' : HOOK) +
+        '<style>\n' + code.css + '\n</style>\n</head>\n<body>\n' + code.html +
+        '\n<scr' + 'ipt>\n' + code.js + '\n</scr' + 'ipt>\n</body>\n</html>';
+    }
+
+    let runTimer, logs = 0;
+    function scheduleRun() {
+      clearTimeout(runTimer);
+      runTimer = setTimeout(run, 700);
+    }
+    function run() {
+      clearLogs();
+      $('frame').srcdoc = buildDoc(false);
+    }
+
+    /* ── console ── */
+    function clearLogs() {
+      logs = 0;
+      $('logCount').textContent = '0';
+      $('console').innerHTML = '<span class="empty">console.log output appears here…</span>';
+    }
+    window.addEventListener('message', (e) => {
+      const d = e.data;
+      if (!d || !d.__sb) return;
+      if (logs === 0) $('console').innerHTML = '';
+      logs++;
+      $('logCount').textContent = logs;
+      const line = document.createElement('div');
+      line.className = 'line ' + d.level;
+      line.textContent = (d.level === 'error' ? '✕ ' : d.level === 'warn' ? '⚠ ' : '› ') + d.msg;
+      $('console').appendChild(line);
+      $('console').scrollTop = $('console').scrollHeight;
+      if (logs > 500) { $('console').firstChild.remove(); }
+    });
+
+    /* ── actions ── */
+    $('runBtn').onclick = run;
+    $('clearLog').onclick = clearLogs;
+    $('resetBtn').onclick = () => {
+      if (!confirm('Reset all three panes to the starter example?')) return;
+      code = { ...STARTER };
+      for (const k of ['html', 'css', 'js']) editors[k].setValue(code[k]);
+      scheduleSave(); run();
+    };
+    $('dlBtn').onclick = () => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([buildDoc(true)], { type: 'text/html' }));
+      a.download = 'sandbox.html';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    };
+    $('popBtn').onclick = () => {
+      const url = URL.createObjectURL(new Blob([buildDoc(true)], { type: 'text/html' }));
+      window.open(url, '_blank');
+      setTimeout(() => URL.revokeObjectURL(url), 30000);
+    };
+
+    run();
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

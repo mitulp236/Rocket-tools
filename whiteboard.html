@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Online Whiteboard — Free Infinite Drawing Canvas | Rocket Tools</title>
+  <meta name="description" content="Sketch ideas on an infinite Excalidraw-powered canvas. Shapes, arrows, freehand and text — autosaved privately in your browser, no account needed." />
+  <link rel="canonical" href="https://rocket-tools.app/whiteboard.html" />
+  <meta property="og:site_name" content="Rocket Tools" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Online Whiteboard — Free Infinite Drawing Canvas" />
+  <meta property="og:description" content="Sketch on an infinite canvas with shapes, arrows and freehand — autosaved privately in your browser." />
+  <meta property="og:url" content="https://rocket-tools.app/whiteboard.html" />
+  <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta name="theme-color" content="#FDFAF5" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"Whiteboard","url":"https://rocket-tools.app/whiteboard.html","applicationCategory":"DesignApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Infinite drawing canvas with shapes, arrows and freehand, autosaved locally in the browser."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"Whiteboard","item":"https://rocket-tools.app/whiteboard.html"}]}]}</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    html, body { overflow: hidden; }
+    #board {
+      position: fixed;
+      top: 55px; left: 0; right: 0; bottom: 0;
+    }
+    /* Blend Excalidraw's UI into the cream theme.
+       Doubled class beats Excalidraw's runtime-injected variable definitions. */
+    .excalidraw.excalidraw {
+      --color-primary: #C8A96E;
+      --color-primary-darker: #B3934F;
+      --color-primary-darkest: #9E7F3E;
+      --color-primary-light: #F0E6D2;
+      --color-primary-hover: #B3934F;
+      --color-surface-primary-container: #F0EBE1;
+      --island-bg-color: rgba(253, 250, 245, 0.96);
+      --color-on-primary-container: #1A1A1A;
+      --default-bg-color: #FDFAF5;
+      --button-hover-bg: #F0EBE1;
+      --sidebar-bg-color: #FDFAF5;
+    }
+    .excalidraw .App-menu_top .buttonList { border-radius: 14px; }
+    #saved {
+      position: fixed;
+      right: 16px; bottom: 16px;
+      z-index: 40;
+      font-size: 11.5px; font-weight: 600;
+      color: var(--muted);
+      background: rgba(253, 250, 245, 0.92);
+      border: 1px solid var(--line);
+      padding: 6px 13px;
+      border-radius: 99px;
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+    #saved.show { opacity: 1; }
+    #fallback {
+      position: fixed; inset: 55px 0 0 0;
+      display: none;
+      align-items: center; justify-content: center;
+      text-align: center; color: var(--muted); font-size: 14px;
+      padding: 30px;
+    }
+  </style>
+  <script>
+    window.EXCALIDRAW_ASSET_PATH = "https://unpkg.com/@excalidraw/excalidraw@0.17.6/dist/";
+    window.process = window.process || { env: { IS_PREACT: "false" } };
+  </script>
+</head>
+<body>
+  <div class="topbar">
+    <a class="nav-home" href="./"><svg width="21" height="21" viewBox="0 0 512 512"><circle cx="256" cy="256" r="240" fill="#C8A96E"/><path d="M256 96c52 38 76 96 76 156 0 22-3 43-10 62h-132c-7-19-10-40-10-62 0-60 24-118 76-156z" fill="#FDFAF5"/><circle cx="256" cy="222" r="26" fill="#C8A96E"/><path d="M190 314l-44 56 62-14M322 314l44 56-62-14" fill="#FDFAF5"/><path d="M256 330c14 18 14 48 0 76-14-28-14-58 0-76z" fill="#F0B45C"/></svg><span>Rocket Tools</span></a>
+    <span class="nav-sep">/</span>
+    <h1 class="nav-title">Whiteboard</h1>
+    <div class="spacer"></div>
+    <span class="hint">autosaves to this browser</span>
+    <button class="btn btn-danger-ghost btn-sm" id="clearBtn">Clear board</button>
+  </div>
+
+  <div id="board"></div>
+  <div id="fallback">Couldn't load the canvas engine.<br />Check your internet connection and reload — drawings stay saved locally.</div>
+  <div id="saved">Saved ✓</div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@excalidraw/excalidraw@0.17.6/dist/excalidraw.production.min.js"></script>
+  <script>
+    const KEY = 'rocket.whiteboard.v1';
+
+    function loadSaved() {
+      try { return JSON.parse(localStorage.getItem(KEY)) || null; }
+      catch { return null; }
+    }
+
+    const savedBadge = document.getElementById('saved');
+    let badgeTimer, saveTimer, lastSerialized = '';
+
+    function persist(elements, appState) {
+      const data = {
+        elements: elements.filter(el => !el.isDeleted),
+        appState: {
+          viewBackgroundColor: appState.viewBackgroundColor,
+          currentItemStrokeColor: appState.currentItemStrokeColor,
+          gridSize: appState.gridSize || null,
+        },
+      };
+      const json = JSON.stringify(data);
+      if (json === lastSerialized) return;
+      lastSerialized = json;
+      localStorage.setItem(KEY, json);
+      savedBadge.classList.add('show');
+      clearTimeout(badgeTimer);
+      badgeTimer = setTimeout(() => savedBadge.classList.remove('show'), 1200);
+    }
+
+    function start() {
+      if (!window.ExcalidrawLib || !window.React) {
+        document.getElementById('fallback').style.display = 'flex';
+        return;
+      }
+      const saved = loadSaved();
+      const App = () => React.createElement(ExcalidrawLib.Excalidraw, {
+        initialData: {
+          elements: (saved && saved.elements) || [],
+          appState: Object.assign(
+            { viewBackgroundColor: '#FDFAF5', currentItemStrokeColor: '#1A1A1A' },
+            (saved && saved.appState) || {}
+          ),
+          scrollToContent: true,
+        },
+        theme: 'light',
+        name: 'rocket-whiteboard',
+        onChange: (elements, appState) => {
+          clearTimeout(saveTimer);
+          saveTimer = setTimeout(() => persist(elements, appState), 600);
+        },
+        UIOptions: {
+          canvasActions: { loadScene: true, saveToActiveFile: false, toggleTheme: false },
+        },
+      });
+      ReactDOM.createRoot(document.getElementById('board')).render(React.createElement(App));
+    }
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+      if (confirm('Clear the whole board? This cannot be undone.')) {
+        localStorage.removeItem(KEY);
+        location.reload();
+      }
+    });
+
+    window.addEventListener('load', start);
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

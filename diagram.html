@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Diagram Maker — Mermaid Flowcharts, Sequence &amp; Gantt | Rocket Tools</title>
+  <meta name="description" content="Type Mermaid text and get flowcharts, sequence diagrams, Gantt charts and mind maps. Live preview, templates and SVG/PNG export — fully offline." />
+  <link rel="canonical" href="https://rocket-tools.app/diagram.html" />
+  <meta property="og:site_name" content="Rocket Tools" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Diagram Maker — Mermaid Flowcharts, Sequence &amp; Gantt" />
+  <meta property="og:description" content="Type Mermaid text, get flowcharts, sequence and Gantt diagrams with live preview and SVG/PNG export." />
+  <meta property="og:url" content="https://rocket-tools.app/diagram.html" />
+  <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta name="theme-color" content="#FDFAF5" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"Diagram Studio","url":"https://rocket-tools.app/diagram.html","applicationCategory":"DesignApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Mermaid diagram editor with live preview, templates and SVG/PNG export."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"Diagram Studio","item":"https://rocket-tools.app/diagram.html"}]}]}</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    .wrap {
+      max-width: 1400px; margin: 0 auto;
+      padding: 16px 16px 24px;
+      height: calc(100vh - 55px);
+      display: grid; grid-template-columns: minmax(320px, 38%) 1fr; gap: 14px;
+    }
+    @media (max-width: 900px) {
+      .wrap { grid-template-columns: 1fr; grid-template-rows: minmax(260px, 40vh) 1fr; height: auto; min-height: calc(100vh - 55px); }
+    }
+    .pane {
+      background: var(--card);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: var(--shadow);
+      display: flex; flex-direction: column;
+      overflow: hidden; min-height: 0; min-width: 0;
+    }
+    .pane-head {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 14px;
+      border-bottom: 1px solid var(--line);
+      font-size: 11px; font-weight: 700; letter-spacing: 0.11em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .pane-head .right { margin-left: auto; display: flex; gap: 6px; align-items: center; }
+    .pane-head select {
+      font-family: inherit; font-size: 12px; font-weight: 600;
+      background: var(--bg); color: var(--ink);
+      border: 1.5px solid var(--line); border-radius: 9px;
+      padding: 6px 9px;
+      text-transform: none; letter-spacing: 0;
+    }
+    .pane-head select:focus { outline: none; border-color: var(--gold); }
+
+    textarea#code {
+      flex: 1; resize: none; border: none;
+      background: var(--bg); color: var(--ink);
+      font-family: var(--mono); font-size: 13px; line-height: 1.7;
+      padding: 14px 16px;
+      tab-size: 2;
+    }
+    textarea#code:focus { outline: none; }
+
+    .ed-status {
+      padding: 8px 14px;
+      font-size: 12px; font-weight: 500;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      min-height: 34px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .ed-status.err { color: var(--bad); }
+    .ed-status .ok-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
+    .ed-status.err .ok-dot { background: var(--bad); }
+
+    #stage {
+      flex: 1; overflow: auto;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    #stage svg { max-width: 100%; height: auto; }
+    #stage .placeholder { color: var(--muted); font-size: 13.5px; font-style: italic; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="nav-home" href="./"><svg width="21" height="21" viewBox="0 0 512 512"><circle cx="256" cy="256" r="240" fill="#C8A96E"/><path d="M256 96c52 38 76 96 76 156 0 22-3 43-10 62h-132c-7-19-10-40-10-62 0-60 24-118 76-156z" fill="#FDFAF5"/><circle cx="256" cy="222" r="26" fill="#C8A96E"/><path d="M190 314l-44 56 62-14M322 314l44 56-62-14" fill="#FDFAF5"/><path d="M256 330c14 18 14 48 0 76-14-28-14-58 0-76z" fill="#F0B45C"/></svg><span>Rocket Tools</span></a>
+    <span class="nav-sep">/</span>
+    <h1 class="nav-title">Diagram Studio</h1>
+    <div class="spacer"></div>
+    <span class="hint">text in, diagrams out — all local</span>
+    <button class="btn btn-ghost btn-sm" id="svgBtn">⬇ SVG</button>
+    <button class="btn btn-gold btn-sm" id="pngBtn">⬇ PNG</button>
+  </div>
+
+  <div class="wrap">
+    <div class="pane">
+      <div class="pane-head">Mermaid code
+        <div class="right">
+          <select id="tpl">
+            <option value="">Insert template…</option>
+            <option value="flow">Flowchart</option>
+            <option value="seq">Sequence</option>
+            <option value="class">Class diagram</option>
+            <option value="state">State machine</option>
+            <option value="gantt">Gantt chart</option>
+            <option value="pie">Pie chart</option>
+            <option value="mindmap">Mind map</option>
+          </select>
+        </div>
+      </div>
+      <textarea id="code" spellcheck="false"></textarea>
+      <div class="ed-status" id="status"><span class="ok-dot"></span><span id="statusText">Rendering…</span></div>
+    </div>
+
+    <div class="pane">
+      <div class="pane-head">Preview</div>
+      <div id="stage"><span class="placeholder">Diagram appears here…</span></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="https://unpkg.com/mermaid@10.9.1/dist/mermaid.min.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const KEY = 'rocket.diagram.v1';
+
+    const TEMPLATES = {
+      flow: 'flowchart TD\n  A[Visitor opens app] --> B{Has a file?}\n  B -- yes --> C[Create room code]\n  B -- no --> D[Enter a code]\n  C --> E[Stream P2P]\n  D --> E\n  E --> F([Done ✓])',
+      seq: 'sequenceDiagram\n  participant S as Sender\n  participant P as PeerJS Cloud\n  participant R as Receiver\n  S->>P: register room AB12CD\n  R->>P: connect to AB12CD\n  P-->>S: receiver joined\n  S->>R: file chunks (WebRTC)\n  R-->>S: complete ✓',
+      class: 'classDiagram\n  class Tool {\n    +String name\n    +render()\n    +save()\n  }\n  class Whiteboard\n  class Notes\n  Tool <|-- Whiteboard\n  Tool <|-- Notes',
+      state: 'stateDiagram-v2\n  [*] --> Idle\n  Idle --> Recording : start\n  Recording --> Paused : pause\n  Paused --> Recording : resume\n  Recording --> Done : stop\n  Done --> [*]',
+      gantt: 'gantt\n  title Launch plan\n  dateFormat YYYY-MM-DD\n  section Build\n  Core tools      :done, a, 2026-06-01, 7d\n  Pro tools       :active, b, after a, 5d\n  section Ship\n  Polish & QA     :c, after b, 3d\n  Deploy          :d, after c, 1d',
+      pie: 'pie title Where the bytes live\n  "Your device" : 95\n  "P2P in transit" : 5',
+      mindmap: 'mindmap\n  root((Rocket Tools))\n    Files\n      PeerDrop\n      PDF Toolkit\n      Image Compressor\n    Create\n      Whiteboard\n      Markdown\n      Code Sandbox\n    Data\n      JSON Studio\n      CSV Studio',
+    };
+
+    mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: 'strict',
+      theme: 'base',
+      themeVariables: {
+        fontFamily: 'Inter, sans-serif',
+        primaryColor: '#F0EBE1',
+        primaryBorderColor: '#C8A96E',
+        primaryTextColor: '#1A1A1A',
+        secondaryColor: '#FBF6EC',
+        tertiaryColor: '#FDFAF5',
+        lineColor: '#8A8378',
+        noteBkgColor: '#FBF6EC',
+        noteBorderColor: '#E5D5B4',
+        actorBorder: '#C8A96E',
+        actorBkg: '#F0EBE1',
+        pie1: '#C8A96E', pie2: '#1A1A1A', pie3: '#E5D5B4', pie4: '#8A8378',
+      },
+    });
+
+    const ta = $('code');
+    ta.value = localStorage.getItem(KEY) || TEMPLATES.flow;
+
+    let renderTimer, seq = 0, lastGoodSvg = '';
+
+    async function render() {
+      const src = ta.value.trim();
+      localStorage.setItem(KEY, ta.value);
+      if (!src) {
+        $('stage').innerHTML = '<span class="placeholder">Diagram appears here…</span>';
+        setStatus(true, 'Empty — pick a template to start.');
+        return;
+      }
+      const id = 'mmd' + (++seq);
+      try {
+        const { svg } = await mermaid.render(id, src);
+        lastGoodSvg = svg;
+        $('stage').innerHTML = svg;
+        setStatus(true, 'Rendered ✓');
+      } catch (e) {
+        // mermaid leaves an orphan error node behind — clean it up
+        document.getElementById('d' + id)?.remove();
+        setStatus(false, (e.message || String(e)).split('\n')[0].slice(0, 160));
+      }
+    }
+
+    function setStatus(ok, msg) {
+      $('status').classList.toggle('err', !ok);
+      $('statusText').textContent = msg;
+    }
+
+    ta.addEventListener('input', () => {
+      clearTimeout(renderTimer);
+      renderTimer = setTimeout(render, 600);
+    });
+
+    // Tab key inserts two spaces instead of leaving the editor
+    ta.addEventListener('keydown', (e) => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const { selectionStart: s, selectionEnd: en } = ta;
+        ta.value = ta.value.slice(0, s) + '  ' + ta.value.slice(en);
+        ta.selectionStart = ta.selectionEnd = s + 2;
+        ta.dispatchEvent(new Event('input'));
+      }
+    });
+
+    $('tpl').onchange = (e) => {
+      const t = TEMPLATES[e.target.value];
+      e.target.value = '';
+      if (!t) return;
+      if (ta.value.trim() && !confirm('Replace the current code with this template?')) return;
+      ta.value = t;
+      render();
+    };
+
+    let toastTimer;
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg; t.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.hidden = true, 2200);
+    }
+
+    function download(name, blob) {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    }
+
+    $('svgBtn').onclick = () => {
+      if (!lastGoodSvg) return toast('Nothing rendered yet');
+      download('diagram.svg', new Blob([lastGoodSvg], { type: 'image/svg+xml' }));
+      toast('SVG downloaded');
+    };
+
+    $('pngBtn').onclick = () => {
+      const svgEl = $('stage').querySelector('svg');
+      if (!svgEl || !lastGoodSvg) return toast('Nothing rendered yet');
+      const box = svgEl.getBoundingClientRect();
+      const w = Math.max(1, Math.round(box.width)), h = Math.max(1, Math.round(box.height));
+      const clone = svgEl.cloneNode(true);
+      clone.setAttribute('width', w);
+      clone.setAttribute('height', h);
+      const data = new XMLSerializer().serializeToString(clone);
+      const img = new Image();
+      img.onload = () => {
+        const scale = 2; // 2x for crisp export
+        const c = document.createElement('canvas');
+        c.width = w * scale; c.height = h * scale;
+        const ctx = c.getContext('2d');
+        ctx.fillStyle = '#FDFAF5';
+        ctx.fillRect(0, 0, c.width, c.height);
+        ctx.drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob((blob) => { download('diagram.png', blob); toast('PNG downloaded (2×)'); }, 'image/png');
+      };
+      img.onerror = () => toast('PNG export failed — try SVG instead');
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(data);
+    };
+
+    render();
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

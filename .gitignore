@@ -1,0 +1,21 @@
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# editors / tooling
+.idea/
+.vscode/
+*.swp
+*.swo
+.claude/
+
+# dependencies & build output (none expected — no-build project)
+node_modules/
+dist/
+build/
+
+# logs & temp
+*.log
+*.tmp
+.cache/

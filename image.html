@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Image Compressor &amp; Converter — WebP, JPEG, PNG, HEIC | Rocket Tools</title>
+  <meta name="description" content="Compress and convert images to WebP, JPEG or PNG right in your browser. Resize, batch process and download as ZIP — photos never leave your device." />
+  <link rel="canonical" href="https://rocket-tools.app/image.html" />
+  <meta property="og:site_name" content="Rocket Tools" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Image Compressor &amp; Converter — WebP, JPEG, PNG, HEIC" />
+  <meta property="og:description" content="Compress, convert and resize images in your browser. Batch processing, ZIP export — photos never leave your device." />
+  <meta property="og:url" content="https://rocket-tools.app/image.html" />
+  <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta name="theme-color" content="#FDFAF5" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"Image Compressor","url":"https://rocket-tools.app/image.html","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Client-side image compression and conversion to WebP, JPEG and PNG with resizing and ZIP export."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"Image Compressor","item":"https://rocket-tools.app/image.html"}]}]}</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    .wrap { max-width: 860px; margin: 0 auto; padding: 24px 20px 60px; }
+
+    .dropzone {
+      border: 2px dashed var(--gold-soft);
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 42px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+    }
+    .dropzone:hover, .dropzone.drag { border-color: var(--gold); transform: translateY(-2px); background: #F4EFE4; }
+    .dz-title { font-weight: 700; font-size: 15.5px; }
+    .dz-hint { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+
+    .settings {
+      display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end;
+      background: var(--card);
+      border-radius: 18px;
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.6);
+      margin-bottom: 22px;
+    }
+    .setting { display: flex; flex-direction: column; gap: 7px; }
+    .setting label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .setting select, .setting input[type=number] {
+      font-family: inherit; font-size: 13.5px; font-weight: 600;
+      background: var(--bg); color: var(--ink);
+      border: 1.5px solid var(--line); border-radius: 11px;
+      padding: 9px 12px;
+    }
+    .setting select:focus, .setting input:focus { outline: none; border-color: var(--gold); }
+    .quality-row { display: flex; align-items: center; gap: 10px; }
+    input[type=range] {
+      -webkit-appearance: none; appearance: none;
+      width: 150px; height: 6px; border-radius: 99px;
+      background: var(--line); outline: none;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: var(--gold); cursor: pointer;
+      border: 3px solid var(--bg);
+      box-shadow: 0 2px 8px rgba(26,26,26,0.25);
+    }
+    .qval { font-size: 13px; font-weight: 700; min-width: 38px; font-variant-numeric: tabular-nums; }
+    .settings .grow { flex: 1; }
+
+    .items { display: flex; flex-direction: column; gap: 12px; }
+    .item {
+      display: flex; align-items: center; gap: 16px;
+      background: var(--card);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.6);
+      padding: 14px 18px 14px 14px;
+      box-shadow: var(--shadow);
+      animation: fadeUp 0.35s both;
+    }
+    .item img.thumb {
+      width: 64px; height: 64px;
+      object-fit: cover;
+      border-radius: 13px;
+      background: var(--bg);
+      flex-shrink: 0;
+    }
+    .item .info { flex: 1; min-width: 0; }
+    .item .name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .item .sizes { font-size: 12.5px; color: var(--muted); margin-top: 2px; font-variant-numeric: tabular-nums; }
+    .item .sizes b { color: var(--ink); }
+    .badge {
+      display: inline-block;
+      font-size: 11px; font-weight: 700;
+      padding: 2px 9px; border-radius: 99px;
+      margin-left: 8px;
+    }
+    .badge.save { background: #E9F0E6; color: var(--good); }
+    .badge.grow-b { background: #F7E8E4; color: var(--bad); }
+    .badge.busy { background: var(--bg); color: var(--muted); }
+    .item .actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    .bulk { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+    .hintline { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 22px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="nav-home" href="./"><svg width="21" height="21" viewBox="0 0 512 512"><circle cx="256" cy="256" r="240" fill="#C8A96E"/><path d="M256 96c52 38 76 96 76 156 0 22-3 43-10 62h-132c-7-19-10-40-10-62 0-60 24-118 76-156z" fill="#FDFAF5"/><circle cx="256" cy="222" r="26" fill="#C8A96E"/><path d="M190 314l-44 56 62-14M322 314l44 56-62-14" fill="#FDFAF5"/><path d="M256 330c14 18 14 48 0 76-14-28-14-58 0-76z" fill="#F0B45C"/></svg><span>Rocket Tools</span></a>
+    <span class="nav-sep">/</span>
+    <h1 class="nav-title">Image Compressor</h1>
+    <div class="spacer"></div>
+    <span class="hint">processed locally — never uploaded</span>
+  </div>
+
+  <div class="wrap">
+    <div class="dropzone" id="dz">
+      <div class="dz-title">Drop images here</div>
+      <div class="dz-hint">or tap to browse · JPG, PNG, WebP, GIF, HEIC · multiple files welcome</div>
+    </div>
+    <input type="file" id="picker" accept="image/*,.heic,.heif" multiple hidden />
+
+    <div class="settings">
+      <div class="setting">
+        <label>Convert to</label>
+        <select id="fmt">
+          <option value="image/webp" selected>WebP (best compression)</option>
+          <option value="image/jpeg">JPEG</option>
+          <option value="image/png">PNG (lossless)</option>
+        </select>
+      </div>
+      <div class="setting">
+        <label>Quality <span id="qNA" style="text-transform:none;letter-spacing:0"></span></label>
+        <div class="quality-row">
+          <input type="range" id="quality" min="5" max="100" value="80" />
+          <span class="qval" id="qval">80%</span>
+        </div>
+      </div>
+      <div class="setting">
+        <label>Max dimension</label>
+        <select id="maxSide">
+          <option value="0">Original size</option>
+          <option value="3840">3840 px (4K)</option>
+          <option value="1920" selected>1920 px (Full HD)</option>
+          <option value="1280">1280 px</option>
+          <option value="800">800 px</option>
+          <option value="400">400 px (thumbnail)</option>
+        </select>
+      </div>
+      <div class="grow"></div>
+      <button class="btn btn-ghost btn-sm" id="clearBtn">Clear all</button>
+    </div>
+
+    <div class="items" id="items"></div>
+
+    <div class="bulk" id="bulk" hidden>
+      <button class="btn btn-gold" id="zipBtn">Download all as ZIP</button>
+      <span class="hintline" id="totals" style="margin:auto 0"></span>
+    </div>
+
+    <div class="hintline">Tip: WebP typically shrinks photos 25–35% smaller than JPEG at the same quality.</div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const items = [];
+    let seq = 0, reprocessTimer;
+
+    const fmtBytes = (n) => n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
+    const extFor = (mime) => ({ 'image/webp': 'webp', 'image/jpeg': 'jpg', 'image/png': 'png' })[mime];
+
+    let toastTimer;
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg; t.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.hidden = true, 2200);
+    }
+
+    function loadScript(src) {
+      return new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = src; s.onload = res; s.onerror = () => rej(new Error('Failed to load ' + src));
+        document.head.appendChild(s);
+      });
+    }
+
+    function settings() {
+      return {
+        fmt: $('fmt').value,
+        quality: +$('quality').value / 100,
+        maxSide: +$('maxSide').value,
+      };
+    }
+
+    async function decode(file) {
+      if (/heic|heif/i.test(file.type) || /\.(heic|heif)$/i.test(file.name)) {
+        if (!window.heic2any) {
+          toast('Loading HEIC converter…');
+          await loadScript('https://unpkg.com/heic2any@0.0.4/dist/heic2any.min.js');
+        }
+        const out = await heic2any({ blob: file, toType: 'image/png' });
+        return createImageBitmap(Array.isArray(out) ? out[0] : out);
+      }
+      return createImageBitmap(file);
+    }
+
+    async function process(item) {
+      const { fmt, quality, maxSide } = settings();
+      item.busy = true;
+      renderItem(item);
+      try {
+        if (!item.bmp) item.bmp = await decode(item.file);
+        const bmp = item.bmp;
+        let w = bmp.width, h = bmp.height;
+        if (maxSide && Math.max(w, h) > maxSide) {
+          const k = maxSide / Math.max(w, h);
+          w = Math.round(w * k); h = Math.round(h * k);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        if (fmt === 'image/jpeg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h); }
+        ctx.drawImage(bmp, 0, 0, w, h);
+        const blob = await new Promise((res) =>
+          canvas.toBlob(res, fmt, fmt === 'image/png' ? undefined : quality)
+        );
+        if (!blob) throw new Error('Encoding failed');
+        if (item.outUrl) URL.revokeObjectURL(item.outUrl);
+        item.out = blob;
+        item.outUrl = URL.createObjectURL(blob);
+        item.outName = item.file.name.replace(/\.[^.]+$/, '') + '.' + extFor(fmt);
+        item.dims = w + '×' + h;
+        item.error = null;
+      } catch (e) {
+        item.error = e.message || 'Could not process this file';
+        item.out = null;
+      }
+      item.busy = false;
+      renderItem(item);
+      renderTotals();
+    }
+
+    function renderItem(item) {
+      let el = document.querySelector('[data-id="' + item.id + '"]');
+      if (!el) {
+        el = document.createElement('div');
+        el.className = 'item';
+        el.dataset.id = item.id;
+        $('items').appendChild(el);
+      }
+      const orig = item.file.size;
+      let sizeHtml, badge = '';
+      if (item.busy) {
+        sizeHtml = fmtBytes(orig) + ' → …';
+        badge = '<span class="badge busy">working…</span>';
+      } else if (item.error) {
+        sizeHtml = fmtBytes(orig);
+        badge = '<span class="badge grow-b">' + item.error + '</span>';
+      } else if (item.out) {
+        const pct = Math.round((1 - item.out.size / orig) * 100);
+        sizeHtml = fmtBytes(orig) + ' → <b>' + fmtBytes(item.out.size) + '</b> · ' + item.dims;
+        badge = pct >= 0
+          ? '<span class="badge save">−' + pct + '%</span>'
+          : '<span class="badge grow-b">+' + (-pct) + '%</span>';
+      } else sizeHtml = fmtBytes(orig);
+
+      el.innerHTML =
+        '<img class="thumb" alt="" src="' + (item.outUrl || '') + '" />' +
+        '<div class="info"><div class="name"></div><div class="sizes">' + sizeHtml + badge + '</div></div>' +
+        '<div class="actions">' +
+          (item.out ? '<a class="btn btn-gold btn-sm" download="' + item.outName + '" href="' + item.outUrl + '">Download</a>' : '') +
+          '<button class="btn btn-ghost btn-sm" data-del>✕</button>' +
+        '</div>';
+      el.querySelector('.name').textContent = item.file.name;
+      el.querySelector('[data-del]').onclick = () => {
+        if (item.outUrl) URL.revokeObjectURL(item.outUrl);
+        items.splice(items.indexOf(item), 1);
+        el.remove();
+        renderTotals();
+      };
+    }
+
+    function renderTotals() {
+      const done = items.filter(i => i.out);
+      $('bulk').hidden = done.length < 2;
+      if (done.length >= 2) {
+        const before = done.reduce((s, i) => s + i.file.size, 0);
+        const after = done.reduce((s, i) => s + i.out.size, 0);
+        $('totals').textContent = done.length + ' files · ' + fmtBytes(before) + ' → ' + fmtBytes(after) +
+          ' (−' + Math.round((1 - after / before) * 100) + '%)';
+      }
+    }
+
+    function addFiles(files) {
+      for (const file of files) {
+        if (!/^image\//.test(file.type) && !/\.(heic|heif)$/i.test(file.name)) continue;
+        const item = { id: ++seq, file, out: null, outUrl: null, bmp: null };
+        items.push(item);
+        process(item);
+      }
+    }
+
+    function reprocessAll() {
+      clearTimeout(reprocessTimer);
+      reprocessTimer = setTimeout(() => items.forEach(process), 250);
+    }
+
+    /* wiring */
+    const dz = $('dz');
+    dz.onclick = () => $('picker').click();
+    dz.ondragover = (e) => { e.preventDefault(); dz.classList.add('drag'); };
+    dz.ondragleave = () => dz.classList.remove('drag');
+    dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove('drag'); addFiles(e.dataTransfer.files); };
+    $('picker').onchange = (e) => { addFiles(e.target.files); e.target.value = ''; };
+
+    $('fmt').onchange = () => { syncQualityUI(); reprocessAll(); };
+    $('maxSide').onchange = reprocessAll;
+    $('quality').oninput = () => { $('qval').textContent = $('quality').value + '%'; reprocessAll(); };
+    function syncQualityUI() {
+      const isPng = $('fmt').value === 'image/png';
+      $('quality').disabled = isPng;
+      $('qNA').textContent = isPng ? '(n/a for PNG)' : '';
+    }
+
+    $('clearBtn').onclick = () => {
+      items.forEach(i => i.outUrl && URL.revokeObjectURL(i.outUrl));
+      items.length = 0;
+      $('items').innerHTML = '';
+      renderTotals();
+    };
+
+    $('zipBtn').onclick = async () => {
+      if (!window.JSZip) {
+        toast('Loading ZIP packer…');
+        await loadScript('https://unpkg.com/jszip@3.10.1/dist/jszip.min.js');
+      }
+      const zip = new JSZip();
+      const used = new Set();
+      for (const i of items.filter(x => x.out)) {
+        let name = i.outName, n = 1;
+        while (used.has(name)) name = i.outName.replace(/\.(\w+)$/, '-' + (++n) + '.$1');
+        used.add(name);
+        zip.file(name, i.out);
+      }
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'images.zip';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      toast('ZIP downloaded');
+    };
+
+    syncQualityUI();
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

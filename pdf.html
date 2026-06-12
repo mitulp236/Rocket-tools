@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>PDF Merger &amp; Splitter — Merge, Split, Rotate PDF Pages | Rocket Tools</title>
+  <meta name="description" content="Merge PDFs, split or extract pages, rotate and reorder, and turn images into PDFs — all offline in your browser. No uploads, completely private." />
+  <link rel="canonical" href="https://rocket-tools.app/pdf.html" />
+  <meta property="og:site_name" content="Rocket Tools" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="PDF Merger &amp; Splitter — Merge, Split, Rotate PDF Pages" />
+  <meta property="og:description" content="Merge, split, rotate and reorder PDF pages offline in your browser. No uploads, completely private." />
+  <meta property="og:url" content="https://rocket-tools.app/pdf.html" />
+  <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta name="theme-color" content="#FDFAF5" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"PDF Toolkit","url":"https://rocket-tools.app/pdf.html","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Merge, split, rotate and reorder PDF pages and convert images to PDF, fully client-side."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"PDF Toolkit","item":"https://rocket-tools.app/pdf.html"}]}]}</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 20px 60px; }
+    .dropzone {
+      border: 2px dashed var(--gold-soft);
+      background: var(--card);
+      border-radius: var(--radius);
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.25s;
+      box-shadow: var(--shadow);
+    }
+    .dropzone:hover, .dropzone.drag { border-color: var(--gold); transform: translateY(-2px); background: #F4EFE4; }
+    .dz-title { font-weight: 700; font-size: 15.5px; }
+    .dz-hint { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
+
+    .toolrow { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; margin: 18px 0; }
+    .toolrow .right { margin-left: auto; display: flex; gap: 9px; }
+    .counter { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 14px;
+    }
+    .page {
+      background: var(--card);
+      border: 2px solid transparent;
+      border-radius: 16px;
+      padding: 10px;
+      cursor: grab;
+      transition: border-color 0.2s, transform 0.18s, opacity 0.2s;
+      animation: fadeUp 0.3s both;
+      position: relative;
+    }
+    .page.dragging { opacity: 0.4; }
+    .page.selected { border-color: var(--gold); background: #F4EFE4; }
+    .page .thumbwrap {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      aspect-ratio: 3 / 4;
+      box-shadow: 0 4px 14px -6px rgba(26,26,26,0.2);
+    }
+    .page img { max-width: 100%; max-height: 100%; transition: transform 0.25s; }
+    .page .meta {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 8px; padding: 0 2px;
+      font-size: 11px; color: var(--muted); font-weight: 600;
+    }
+    .page .pbtns { display: flex; gap: 2px; }
+    .page .pbtns button {
+      border: none; background: none; cursor: pointer;
+      font-size: 13px; color: var(--muted);
+      width: 24px; height: 24px; border-radius: 7px;
+      transition: all 0.15s;
+    }
+    .page .pbtns button:hover { background: var(--bg); color: var(--ink); }
+    .page .pbtns button.del:hover { color: var(--bad); }
+    .page .check {
+      position: absolute; top: 16px; left: 16px;
+      width: 22px; height: 22px;
+      border-radius: 8px;
+      border: 2px solid var(--gold-soft);
+      background: rgba(253,250,245,0.9);
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: #fff;
+      transition: all 0.15s;
+    }
+    .page.selected .check { background: var(--gold); border-color: var(--gold); }
+    .src-tag {
+      position: absolute; top: 16px; right: 16px;
+      font-size: 9px; font-weight: 700;
+      background: rgba(253,250,245,0.92);
+      color: var(--muted);
+      border-radius: 7px; padding: 2px 7px;
+      max-width: 70%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .busy { text-align: center; color: var(--muted); font-size: 13px; padding: 26px; }
+    .hintline { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="nav-home" href="./"><svg width="21" height="21" viewBox="0 0 512 512"><circle cx="256" cy="256" r="240" fill="#C8A96E"/><path d="M256 96c52 38 76 96 76 156 0 22-3 43-10 62h-132c-7-19-10-40-10-62 0-60 24-118 76-156z" fill="#FDFAF5"/><circle cx="256" cy="222" r="26" fill="#C8A96E"/><path d="M190 314l-44 56 62-14M322 314l44 56-62-14" fill="#FDFAF5"/><path d="M256 330c14 18 14 48 0 76-14-28-14-58 0-76z" fill="#F0B45C"/></svg><span>Rocket Tools</span></a>
+    <span class="nav-sep">/</span>
+    <h1 class="nav-title">PDF Toolkit</h1>
+    <div class="spacer"></div>
+    <span class="hint">merge · split · reorder · rotate — locally</span>
+  </div>
+
+  <div class="wrap">
+    <div class="dropzone" id="dz">
+      <div class="dz-title">Drop PDFs or images here</div>
+      <div class="dz-hint">add multiple files to merge · JPG/PNG become PDF pages · nothing is uploaded</div>
+    </div>
+    <input type="file" id="picker" accept="application/pdf,image/jpeg,image/png" multiple hidden />
+
+    <div class="toolrow" id="tools" hidden>
+      <span class="counter" id="counter"></span>
+      <button class="btn btn-ghost btn-sm" id="selAll">Select all</button>
+      <button class="btn btn-ghost btn-sm" id="selNone">Select none</button>
+      <button class="btn btn-ghost btn-sm" id="delSel">Delete selected</button>
+      <div class="right">
+        <button class="btn btn-ghost btn-sm" id="exportSel">Export selected</button>
+        <button class="btn btn-gold btn-sm" id="exportAll">⬇ Export PDF</button>
+      </div>
+    </div>
+
+    <div class="busy" id="busy" hidden>Rendering pages…</div>
+    <div class="grid" id="grid"></div>
+
+    <div class="hintline">Drag pages to reorder · ↻ rotates · click the checkbox to select pages for split/extract.</div>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script>
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+    const $ = (id) => document.getElementById(id);
+    const sources = [];   // {name, bytes, libDoc(lazy)}
+    let pages = [];       // {id, kind:'pdf'|'img', srcIdx, pageIdx, rotation, thumb, imgBytes, imgType, w, h}
+    let seq = 0, dragEl = null;
+
+    let toastTimer;
+    function toast(msg) {
+      const t = $('toast');
+      t.textContent = msg; t.hidden = false;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => t.hidden = true, 2400);
+    }
+
+    async function addFiles(files) {
+      $('busy').hidden = false;
+      for (const file of files) {
+        try {
+          if (file.type === 'application/pdf' || /\.pdf$/i.test(file.name)) await addPdf(file);
+          else if (/^image\/(jpeg|png)$/.test(file.type)) await addImage(file);
+        } catch (e) {
+          toast('Could not read ' + file.name + ' — ' + (e.message || 'unknown error'));
+        }
+      }
+      $('busy').hidden = true;
+      render();
+    }
+
+    async function addPdf(file) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const srcIdx = sources.length;
+      sources.push({ name: file.name, bytes });
+      // pdf.js needs its own copy — it transfers the buffer to the worker
+      const doc = await pdfjsLib.getDocument({ data: bytes.slice() }).promise;
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const vp = page.getViewport({ scale: 1 });
+        const scale = 170 / vp.width;
+        const sv = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.width = sv.width; canvas.height = sv.height;
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport: sv }).promise;
+        pages.push({
+          id: ++seq, kind: 'pdf', srcIdx, pageIdx: i - 1, rotation: 0,
+          thumb: canvas.toDataURL('image/jpeg', 0.7), srcName: file.name, selected: false,
+        });
+      }
+      doc.destroy();
+    }
+
+    async function addImage(file) {
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      const bmp = await createImageBitmap(file);
+      const canvas = document.createElement('canvas');
+      const scale = 170 / bmp.width;
+      canvas.width = 170; canvas.height = Math.round(bmp.height * scale);
+      canvas.getContext('2d').drawImage(bmp, 0, 0, canvas.width, canvas.height);
+      pages.push({
+        id: ++seq, kind: 'img', imgBytes: bytes, imgType: file.type,
+        w: bmp.width, h: bmp.height, rotation: 0,
+        thumb: canvas.toDataURL('image/jpeg', 0.75), srcName: file.name, selected: false,
+      });
+      bmp.close();
+    }
+
+    function render() {
+      const grid = $('grid');
+      grid.innerHTML = '';
+      $('tools').hidden = pages.length === 0;
+      const sel = pages.filter(p => p.selected).length;
+      $('counter').textContent = pages.length + ' page' + (pages.length === 1 ? '' : 's') + (sel ? ' · ' + sel + ' selected' : '');
+      $('exportSel').disabled = sel === 0;
+      $('delSel').disabled = sel === 0;
+
+      pages.forEach((p, idx) => {
+        const el = document.createElement('div');
+        el.className = 'page' + (p.selected ? ' selected' : '');
+        el.draggable = true;
+        el.innerHTML =
+          '<div class="check">' + (p.selected ? '✓' : '') + '</div>' +
+          '<div class="src-tag"></div>' +
+          '<div class="thumbwrap"><img src="' + p.thumb + '" style="transform:rotate(' + p.rotation + 'deg)" /></div>' +
+          '<div class="meta"><span>' + (idx + 1) + '</span><div class="pbtns">' +
+            '<button class="rot" title="Rotate 90°">↻</button>' +
+            '<button class="del" title="Remove">✕</button>' +
+          '</div></div>';
+        el.querySelector('.src-tag').textContent = p.srcName;
+        el.querySelector('.check').onclick = () => { p.selected = !p.selected; render(); };
+        el.querySelector('.rot').onclick = () => { p.rotation = (p.rotation + 90) % 360; render(); };
+        el.querySelector('.del').onclick = () => { pages = pages.filter(x => x.id !== p.id); render(); };
+        el.addEventListener('dragstart', () => { dragEl = p.id; el.classList.add('dragging'); });
+        el.addEventListener('dragend', () => { dragEl = null; el.classList.remove('dragging'); });
+        el.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          if (!dragEl || dragEl === p.id) return;
+          const from = pages.findIndex(x => x.id === dragEl);
+          const to = pages.findIndex(x => x.id === p.id);
+          pages.splice(to, 0, pages.splice(from, 1)[0]);
+          render();
+        });
+        grid.appendChild(el);
+      });
+    }
+
+    async function exportPdf(list, name) {
+      if (!list.length) return toast('No pages to export.');
+      toast('Building PDF…');
+      const { PDFDocument, degrees } = PDFLib;
+      const out = await PDFDocument.create();
+      // load each source into pdf-lib once
+      const libDocs = {};
+      for (const p of list) {
+        if (p.kind === 'pdf' && !libDocs[p.srcIdx]) {
+          libDocs[p.srcIdx] = await PDFDocument.load(sources[p.srcIdx].bytes, { ignoreEncryption: true });
+        }
+      }
+      for (const p of list) {
+        if (p.kind === 'pdf') {
+          const [copied] = await out.copyPages(libDocs[p.srcIdx], [p.pageIdx]);
+          const base = copied.getRotation().angle || 0;
+          copied.setRotation(degrees((base + p.rotation) % 360));
+          out.addPage(copied);
+        } else {
+          const img = p.imgType === 'image/png' ? await out.embedPng(p.imgBytes) : await out.embedJpg(p.imgBytes);
+          const rotated = p.rotation % 180 !== 0;
+          const pw = rotated ? p.h : p.w, ph = rotated ? p.w : p.h;
+          // fit to A4-ish width while preserving aspect
+          const maxW = 595.28, k = Math.min(1, maxW / pw);
+          const page = out.addPage([pw * k, ph * k]);
+          page.drawImage(img, {
+            x: pw * k / 2 - (p.w * k) / 2,
+            y: ph * k / 2 - (p.h * k) / 2,
+            width: p.w * k, height: p.h * k,
+            rotate: degrees(-p.rotation),
+          });
+        }
+      }
+      const bytes = await out.save();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
+      a.download = name;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      toast(name + ' downloaded (' + (bytes.length / 1048576).toFixed(2) + ' MB)');
+    }
+
+    /* wiring */
+    const dz = $('dz');
+    dz.onclick = () => $('picker').click();
+    dz.ondragover = (e) => { e.preventDefault(); dz.classList.add('drag'); };
+    dz.ondragleave = () => dz.classList.remove('drag');
+    dz.ondrop = (e) => { e.preventDefault(); dz.classList.remove('drag'); addFiles(e.dataTransfer.files); };
+    $('picker').onchange = (e) => { addFiles(e.target.files); e.target.value = ''; };
+
+    $('selAll').onclick = () => { pages.forEach(p => p.selected = true); render(); };
+    $('selNone').onclick = () => { pages.forEach(p => p.selected = false); render(); };
+    $('delSel').onclick = () => { pages = pages.filter(p => !p.selected); render(); };
+    $('exportAll').onclick = () => exportPdf(pages, 'document.pdf');
+    $('exportSel').onclick = () => exportPdf(pages.filter(p => p.selected), 'extracted.pdf');
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

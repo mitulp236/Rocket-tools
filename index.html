@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Rocket Tools — Free Private Online Tools That Run in Your Browser</title>
+  <meta name="description" content="Fifteen free, elegant tools: P2P video calls, file transfer, whiteboard, notes, todos, JSON, Markdown, image compressor, PDF toolkit, color studio, CSV viewer, QR codes, screen recorder, code sandbox and diagrams. No accounts, no uploads, no servers." />
+  <link rel="canonical" href="https://rocket-tools.app/" />
+  <meta property="og:site_name" content="Rocket Tools" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Rocket Tools — Free Private Online Tools That Run in Your Browser" />
+  <meta property="og:description" content="Fifteen free, elegant tools — video calls, file transfer, whiteboard, notes, PDFs, images and more. No accounts, no uploads, no servers." />
+  <meta property="og:url" content="https://rocket-tools.app/" />
+  <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta name="theme-color" content="#FDFAF5" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"Rocket Tools","url":"https://rocket-tools.app/","description":"Fifteen free, private tools that run entirely in the browser."},{"@type":"ItemList","itemListElement":[{"@type":"ListItem","position":1,"name":"Meet","url":"https://rocket-tools.app/meet.html"},{"@type":"ListItem","position":2,"name":"PeerDrop","url":"https://rocket-tools.app/peerdrop/"},{"@type":"ListItem","position":3,"name":"Whiteboard","url":"https://rocket-tools.app/whiteboard.html"},{"@type":"ListItem","position":4,"name":"Notes","url":"https://rocket-tools.app/notes.html"},{"@type":"ListItem","position":5,"name":"Todo","url":"https://rocket-tools.app/todo.html"},{"@type":"ListItem","position":6,"name":"JSON Studio","url":"https://rocket-tools.app/json.html"},{"@type":"ListItem","position":7,"name":"Markdown","url":"https://rocket-tools.app/markdown.html"},{"@type":"ListItem","position":8,"name":"Image Compressor","url":"https://rocket-tools.app/image.html"},{"@type":"ListItem","position":9,"name":"PDF Toolkit","url":"https://rocket-tools.app/pdf.html"},{"@type":"ListItem","position":10,"name":"Color Studio","url":"https://rocket-tools.app/color.html"},{"@type":"ListItem","position":11,"name":"CSV Studio","url":"https://rocket-tools.app/csv.html"},{"@type":"ListItem","position":12,"name":"QR Codes","url":"https://rocket-tools.app/qr.html"},{"@type":"ListItem","position":13,"name":"Screen Recorder","url":"https://rocket-tools.app/record.html"},{"@type":"ListItem","position":14,"name":"Code Sandbox","url":"https://rocket-tools.app/sandbox.html"},{"@type":"ListItem","position":15,"name":"Diagram Studio","url":"https://rocket-tools.app/diagram.html"}]}]}</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    .shell {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 22px 22px 56px;
+      min-height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    header.top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 2px 0;
+    }
+    .wordmark {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 800; font-size: 19px; letter-spacing: -0.03em;
+      user-select: none;
+    }
+    .wordmark svg { display: block; }
+    .tagline { font-size: 12.5px; color: var(--muted); font-weight: 500; }
+
+    .hero { text-align: center; padding: 58px 0 44px; }
+    .hero h1 {
+      font-size: clamp(32px, 6.5vw, 50px);
+      font-weight: 800;
+      letter-spacing: -0.045em;
+      line-height: 1.08;
+      margin-bottom: 14px;
+    }
+    .hero h1 em { font-style: normal; color: var(--gold); }
+    .hero p {
+      color: var(--muted);
+      font-size: 16px;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+    @media (max-width: 860px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 540px) { .grid { grid-template-columns: 1fr; } }
+
+    a.tool {
+      display: block;
+      text-decoration: none;
+      color: inherit;
+      background: var(--card);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: var(--radius);
+      padding: 26px 24px 24px;
+      box-shadow: var(--shadow);
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.25s, background 0.25s;
+      animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    a.tool:nth-child(2)  { animation-delay: 0.04s; }
+    a.tool:nth-child(3)  { animation-delay: 0.08s; }
+    a.tool:nth-child(4)  { animation-delay: 0.12s; }
+    a.tool:nth-child(5)  { animation-delay: 0.16s; }
+    a.tool:nth-child(6)  { animation-delay: 0.20s; }
+    a.tool:nth-child(7)  { animation-delay: 0.24s; }
+    a.tool:nth-child(8)  { animation-delay: 0.28s; }
+    a.tool:nth-child(9)  { animation-delay: 0.32s; }
+    a.tool:nth-child(10) { animation-delay: 0.36s; }
+    a.tool:nth-child(11) { animation-delay: 0.40s; }
+    a.tool:nth-child(12) { animation-delay: 0.44s; }
+    a.tool:hover {
+      transform: translateY(-5px);
+      border-color: var(--gold-soft);
+      background: #F4EFE4;
+    }
+    a.tool:active { transform: translateY(-2px) scale(0.99); }
+    .tool .ticon {
+      width: 52px; height: 52px;
+      border-radius: 16px;
+      background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 18px;
+      box-shadow: 0 8px 22px -10px rgba(26, 26, 26, 0.16);
+      transition: transform 0.25s;
+    }
+    a.tool:hover .ticon { transform: scale(1.08) rotate(-3deg); }
+    .tool h2 {
+      font-size: 16.5px; font-weight: 700; letter-spacing: -0.02em;
+      margin-bottom: 5px;
+      display: flex; align-items: center; gap: 7px;
+    }
+    .tool h2 .arrow {
+      opacity: 0; transform: translateX(-4px);
+      transition: opacity 0.2s, transform 0.2s;
+      color: var(--gold);
+    }
+    a.tool:hover h2 .arrow { opacity: 1; transform: translateX(0); }
+    .tool p { font-size: 13px; color: var(--muted); line-height: 1.55; }
+
+    footer.foot {
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--muted);
+      padding-top: 52px;
+      margin-top: auto;
+    }
+    footer.foot b { color: var(--gold); font-weight: 600; }
+    .foot-rule {
+      width: 54px; height: 3px;
+      border-radius: 99px;
+      background: var(--gold-soft);
+      margin: 0 auto 26px;
+      opacity: 0.8;
+    }
+
+    /* ── ambient background glow ── */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      width: 58vmax; height: 58vmax;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: -1;
+      filter: blur(70px);
+    }
+    body::before {
+      top: -24vmax; right: -20vmax;
+      background: radial-gradient(circle, rgba(200, 169, 110, 0.13), transparent 62%);
+      animation: drift1 24s ease-in-out infinite alternate;
+    }
+    body::after {
+      bottom: -28vmax; left: -22vmax;
+      background: radial-gradient(circle, rgba(200, 169, 110, 0.09), transparent 62%);
+      animation: drift2 30s ease-in-out infinite alternate;
+    }
+    @keyframes drift1 { to { transform: translate(-7vmax, 6vmax); } }
+    @keyframes drift2 { to { transform: translate(6vmax, -7vmax); } }
+
+    /* ── entrance choreography ── */
+    header.top { animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .hero .eyebrow { animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.05s both; }
+    .hero h1 { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both; }
+    .hero p { animation: fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.22s both; }
+
+    .eyebrow {
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+      font-size: 10.5px; font-weight: 700;
+      letter-spacing: 0.24em; text-transform: uppercase;
+      color: #8A6E3A;
+      margin-bottom: 20px;
+    }
+    .eyebrow::before, .eyebrow::after {
+      content: '';
+      height: 1px; width: 42px;
+      background: linear-gradient(90deg, transparent, var(--gold-soft));
+    }
+    .eyebrow::after { background: linear-gradient(90deg, var(--gold-soft), transparent); }
+
+    .hero h1 em {
+      background: linear-gradient(105deg, #B3934F 25%, #E8CD92 48%, #C8A96E 70%);
+      background-size: 220% 100%;
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: goldshine 5.5s ease-in-out infinite;
+    }
+    @keyframes goldshine {
+      0%, 100% { background-position: 105% 0; }
+      50% { background-position: 0% 0; }
+    }
+
+    .wordmark svg { animation: bob 4.5s ease-in-out infinite; }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-3px); }
+    }
+
+    /* ── card micro-interactions ── */
+    a.tool { position: relative; }
+    a.tool::before {
+      content: '';
+      position: absolute; top: 0; left: 26px; right: 26px;
+      height: 2px; border-radius: 99px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      transform: scaleX(0);
+      transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    a.tool:hover::before { transform: scaleX(1); }
+    a.tool:hover { box-shadow: 0 26px 60px -26px rgba(26, 26, 26, 0.28); }
+    a.tool:hover .ticon { background: #FBF6EC; box-shadow: 0 10px 24px -10px rgba(200, 169, 110, 0.45); }
+    .tool .tag {
+      position: absolute; top: 22px; right: 22px;
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.13em; text-transform: uppercase;
+      color: var(--muted);
+      background: var(--bg);
+      border: 1px solid var(--line);
+      padding: 4px 10px; border-radius: 99px;
+      transition: color 0.25s, border-color 0.25s;
+    }
+    a.tool:hover .tag { color: #8A6E3A; border-color: var(--gold-soft); }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header class="top">
+      <div class="wordmark">
+        <svg width="26" height="26" viewBox="0 0 512 512"><circle cx="256" cy="256" r="240" fill="#C8A96E"/><path d="M256 96c52 38 76 96 76 156 0 22-3 43-10 62h-132c-7-19-10-40-10-62 0-60 24-118 76-156z" fill="#FDFAF5"/><circle cx="256" cy="222" r="26" fill="#C8A96E"/><path d="M190 314l-44 56 62-14M322 314l44 56-62-14" fill="#FDFAF5"/><path d="M256 330c14 18 14 48 0 76-14-28-14-58 0-76z" fill="#F0B45C"/></svg>
+        Rocket Tools
+      </div>
+      <div class="tagline">no accounts · no servers</div>
+    </header>
+
+    <section class="hero">
+      <div class="eyebrow">Fifteen tools · Zero servers</div>
+      <h1>Everyday tools,<br /><em>weightless.</em></h1>
+      <p>Fifteen tiny apps that live entirely in your browser. Nothing to install, nothing leaves your device.</p>
+    </section>
+
+    <main class="grid">
+      <a class="tool" href="meet.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5"/><circle cx="17.5" cy="9.5" r="2.4"/><path d="M16.5 14.8c2.2.2 3.8 1.5 4.4 3.7"/></svg>
+        </div>
+        <h2>Meet <span class="arrow">→</span></h2>
+        <p>Video calls with a shareable link — emoji identities, screen share, direct peer-to-peer.</p>
+      </a>
+
+      <a class="tool" href="peerdrop/">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17V4"/><path d="M3 8l4-4 4 4"/><path d="M17 7v13"/><path d="M21 16l-4 4-4-4"/></svg>
+        </div>
+        <h2>PeerDrop <span class="arrow">→</span></h2>
+        <p>Beam files of any size device-to-device over encrypted WebRTC. No cloud in between.</p>
+      </a>
+
+      <a class="tool" href="whiteboard.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+        </div>
+        <h2>Whiteboard <span class="arrow">→</span></h2>
+        <p>Sketch ideas on an infinite canvas. Shapes, arrows, freehand — saved locally as you draw.</p>
+      </a>
+
+      <a class="tool" href="notes.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 14h6"/><path d="M9 18h4"/></svg>
+        </div>
+        <h2>Notes <span class="arrow">→</span></h2>
+        <p>Quick, private notes on clean paper. Autosaved to your browser, searchable in an instant.</p>
+      </a>
+
+      <a class="tool" href="todo.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><path d="M8.5 12.5l2.5 2.5 5-6"/></svg>
+        </div>
+        <h2>Todo <span class="arrow">→</span></h2>
+        <p>An elegant little task list. Add, check off, reorder — it remembers everything for you.</p>
+      </a>
+
+      <a class="tool" href="json.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H7a3 3 0 0 0-3 3v3c0 1.5-.7 3-2 3 1.3 0 2 1.5 2 3v3a3 3 0 0 0 3 3h1"/><path d="M16 3h1a3 3 0 0 1 3 3v3c0 1.5.7 3 2 3-1.3 0-2 1.5-2 3v3a3 3 0 0 1-3 3h-1"/></svg>
+        </div>
+        <h2>JSON Studio <span class="arrow">→</span></h2>
+        <p>Format, validate and explore JSON as a tree. Convert to and from YAML or CSV.</p>
+      </a>
+
+      <a class="tool" href="markdown.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M6 15V9.5l2.5 3 2.5-3V15"/><path d="M17 9v4"/><path d="M15 12l2 2.5 2-2.5"/></svg>
+        </div>
+        <h2>Markdown <span class="arrow">→</span></h2>
+        <p>Write READMEs with a rich toolbar and live side-by-side preview. Export .md or HTML.</p>
+      </a>
+
+      <a class="tool" href="image.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="4"/><circle cx="8.5" cy="8.5" r="1.8"/><path d="M21 15l-5-5L5 21"/></svg>
+        </div>
+        <h2>Image Compressor <span class="arrow">→</span></h2>
+        <p>Shrink and convert photos to WebP, JPEG or PNG — without uploading them anywhere.</p>
+      </a>
+
+      <a class="tool" href="pdf.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/><path d="M9 9h1"/></svg>
+        </div>
+        <h2>PDF Toolkit <span class="arrow">→</span></h2>
+        <p>Merge, split, reorder and rotate PDF pages. Turn images into PDFs. All offline.</p>
+      </a>
+
+      <a class="tool" href="color.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a10 10 0 1 1 10-10c0 2.5-2 3.5-3.5 3.5H16a2.5 2.5 0 0 0-2 4c.5.7 0 2.5-2 2.5z"/><circle cx="7.5" cy="11.5" r="1.2"/><circle cx="11" cy="7.5" r="1.2"/><circle cx="16" cy="9" r="1.2"/></svg>
+        </div>
+        <h2>Color Studio <span class="arrow">→</span></h2>
+        <p>Pick colors, build harmonies and gradients, and check WCAG contrast compliance.</p>
+      </a>
+
+      <a class="tool" href="csv.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M10 3v18"/></svg>
+        </div>
+        <h2>CSV Studio <span class="arrow">→</span></h2>
+        <p>Open CSV and Excel files instantly — sort, filter, clean and export, no spreadsheet app.</p>
+      </a>
+
+      <a class="tool" href="qr.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 14h3v3h-3z"/><path d="M21 14v2"/><path d="M14 21h2"/><path d="M19 19h2v2h-2z"/></svg>
+        </div>
+        <h2>QR Codes <span class="arrow">→</span></h2>
+        <p>Generate QR codes for links, Wi-Fi and contacts — or scan one with your camera.</p>
+      </a>
+
+      <a class="tool" href="record.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="15" height="13" rx="3"/><path d="M22 8.5l-5 3 5 3z"/><circle cx="9.5" cy="10.5" r="2.6"/></svg>
+        </div>
+        <h2>Screen Recorder <span class="arrow">→</span></h2>
+        <p>Capture a tab, window or screen to a video file — recorded and saved on-device.</p>
+      </a>
+
+      <a class="tool" href="sandbox.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7l-5 5 5 5"/><path d="M16 7l5 5-5 5"/><path d="M13 4l-2 16"/></svg>
+        </div>
+        <h2>Code Sandbox <span class="arrow">→</span></h2>
+        <p>HTML, CSS and JS with live preview and console — a tiny CodePen, fully offline.</p>
+      </a>
+
+      <a class="tool" href="diagram.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="6" rx="2"/><rect x="14" y="15" width="7" height="6" rx="2"/><rect x="14" y="3" width="7" height="6" rx="2"/><path d="M6.5 9v4a2 2 0 0 0 2 2H14"/><path d="M17.5 9v6"/></svg>
+        </div>
+        <h2>Diagram Studio <span class="arrow">→</span></h2>
+        <p>Type Mermaid text, get flowcharts, sequence and Gantt diagrams. Export SVG or PNG.</p>
+      </a>
+    </main>
+
+    <footer class="foot">
+      <div class="foot-rule"></div>
+      Everything runs <b>locally in your browser</b> — your data never leaves your device.<br />
+      PeerDrop streams files directly between peers; the rest never touch a network at all.
+    </footer>
+  </div>
+
+  <script>
+    const TAGS = {
+      'peerdrop/': 'P2P', 'whiteboard.html': 'Canvas', 'notes.html': 'Write',
+      'todo.html': 'Plan', 'json.html': 'Data', 'markdown.html': 'Write',
+      'image.html': 'Media', 'pdf.html': 'Docs', 'color.html': 'Design',
+      'csv.html': 'Data', 'qr.html': 'Utility', 'record.html': 'Media',
+      'sandbox.html': 'Code', 'diagram.html': 'Design', 'meet.html': 'Live',
+    };
+    document.querySelectorAll('a.tool').forEach((a) => {
+      const t = TAGS[a.getAttribute('href')];
+      if (!t) return;
+      const s = document.createElement('span');
+      s.className = 'tag';
+      s.textContent = t;
+      a.appendChild(s);
+    });
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

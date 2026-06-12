@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Notes — Free Private Online Notepad | Rocket Tools</title>
+  <meta name="description" content="A clean, distraction-free notepad in your browser. Multiple notes, instant search and autosave — everything stays on your device." />
+  <link rel="canonical" href="https://rocket-tools.app/notes.html" />
+  <meta property="og:site_name" content="Rocket Tools" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Notes — Free Private Online Notepad" />
+  <meta property="og:description" content="A clean, distraction-free notepad with search and autosave — everything stays on your device." />
+  <meta property="og:url" content="https://rocket-tools.app/notes.html" />
+  <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta name="theme-color" content="#FDFAF5" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"Notes","url":"https://rocket-tools.app/notes.html","applicationCategory":"ProductivityApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Private browser notepad with multiple notes, instant search and autosave."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"Notes","item":"https://rocket-tools.app/notes.html"}]}]}</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    .app {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 20px;
+      display: grid;
+      grid-template-columns: 300px 1fr;
+      gap: 20px;
+      height: calc(100vh - 55px);
+    }
+    .pane { display: flex; flex-direction: column; min-height: 0; }
+
+    /* sidebar */
+    .side-head { display: flex; gap: 10px; margin-bottom: 14px; }
+    .side-head input { flex: 1; min-width: 0; }
+    .note-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 9px; padding-bottom: 12px; }
+    .note-item {
+      background: var(--card);
+      border: 1.5px solid transparent;
+      border-radius: 16px;
+      padding: 13px 16px;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.18s, background 0.2s;
+      animation: fadeUp 0.3s both;
+    }
+    .note-item:hover { transform: translateX(3px); }
+    .note-item.active { border-color: var(--gold); background: #F4EFE4; }
+    .note-item h3 {
+      font-size: 13.5px; font-weight: 700;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+    .note-item p {
+      font-size: 12px; color: var(--muted);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .note-item .when { font-size: 10.5px; color: var(--gold); font-weight: 600; margin-top: 5px; }
+
+    /* editor */
+    .editor {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,0.6);
+      display: flex; flex-direction: column;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .editor input.title {
+      border: none; background: transparent;
+      font-family: inherit;
+      font-size: 22px; font-weight: 800; letter-spacing: -0.02em;
+      color: var(--ink);
+      padding: 26px 30px 4px;
+    }
+    .editor input.title:focus { outline: none; }
+    .editor input.title::placeholder { color: var(--gold-soft); }
+    .editor textarea {
+      flex: 1;
+      border: none; background: transparent; resize: none;
+      font-family: inherit;
+      font-size: 15px; line-height: 1.75;
+      color: var(--ink);
+      padding: 14px 30px 24px;
+    }
+    .editor textarea:focus { outline: none; }
+    .editor textarea::placeholder { color: var(--muted); opacity: 0.6; }
+    .editor-foot {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 22px;
+      border-top: 1px solid var(--line);
+      font-size: 11.5px; color: var(--muted); font-weight: 500;
+    }
+    .editor-foot .spacer { flex: 1; }
+
+    .empty {
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; color: var(--muted);
+      gap: 16px; padding: 30px;
+    }
+    .empty .glyph {
+      width: 68px; height: 68px; border-radius: 20px;
+      background: var(--card);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow);
+    }
+    .empty h2 { font-size: 17px; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; }
+    .empty p { font-size: 13.5px; max-width: 260px; }
+
+    /* mobile: one pane at a time */
+    .mobile-back { display: none; }
+    @media (max-width: 760px) {
+      .app { grid-template-columns: 1fr; padding: 14px; height: calc(100vh - 55px); }
+      .app.editing .pane-list { display: none; }
+      .app:not(.editing) .pane-edit { display: none; }
+      .mobile-back { display: inline-flex; }
+      .editor input.title { font-size: 19px; padding: 20px 22px 2px; }
+      .editor textarea { padding: 10px 22px 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="nav-home" href="./"><svg width="21" height="21" viewBox="0 0 512 512"><circle cx="256" cy="256" r="240" fill="#C8A96E"/><path d="M256 96c52 38 76 96 76 156 0 22-3 43-10 62h-132c-7-19-10-40-10-62 0-60 24-118 76-156z" fill="#FDFAF5"/><circle cx="256" cy="222" r="26" fill="#C8A96E"/><path d="M190 314l-44 56 62-14M322 314l44 56-62-14" fill="#FDFAF5"/><path d="M256 330c14 18 14 48 0 76-14-28-14-58 0-76z" fill="#F0B45C"/></svg><span>Rocket Tools</span></a>
+    <span class="nav-sep">/</span>
+    <h1 class="nav-title">Notes</h1>
+    <div class="spacer"></div>
+    <span class="hint" id="saveHint">autosaves to this browser</span>
+    <button class="btn btn-gold btn-sm" id="newBtn">+ New note</button>
+  </div>
+
+  <div class="app" id="app">
+    <div class="pane pane-list">
+      <div class="side-head">
+        <input class="field" id="search" type="search" placeholder="Search notes…" autocomplete="off" />
+      </div>
+      <div class="note-list" id="list"></div>
+    </div>
+
+    <div class="pane pane-edit">
+      <div class="editor" id="editor" hidden>
+        <input class="title" id="title" placeholder="Untitled" maxlength="120" />
+        <textarea id="body" placeholder="Start writing…" spellcheck="true"></textarea>
+        <div class="editor-foot">
+          <button class="btn btn-ghost btn-sm mobile-back" id="backBtn">← All notes</button>
+          <span id="meta"></span>
+          <div class="spacer"></div>
+          <span id="count"></span>
+          <button class="btn btn-danger-ghost btn-sm" id="delBtn">Delete</button>
+        </div>
+      </div>
+      <div class="empty" id="emptySel">
+        <div class="glyph">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        </div>
+        <h2>Nothing selected</h2>
+        <p>Pick a note from the list, or create a new one.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const KEY = 'rocket.notes.v1';
+    const $ = (id) => document.getElementById(id);
+    const app = $('app'), list = $('list'), editor = $('editor'), emptySel = $('emptySel');
+    const titleEl = $('title'), bodyEl = $('body'), metaEl = $('meta'), countEl = $('count');
+
+    let notes = [];
+    try { notes = JSON.parse(localStorage.getItem(KEY)) || []; } catch {}
+    let activeId = null;
+    let saveTimer;
+
+    const save = () => localStorage.setItem(KEY, JSON.stringify(notes));
+    const byId = (id) => notes.find(n => n.id === id);
+
+    function relTime(ts) {
+      const d = Date.now() - ts;
+      if (d < 60e3) return 'just now';
+      if (d < 3600e3) return Math.floor(d / 60e3) + 'm ago';
+      if (d < 86400e3) return Math.floor(d / 3600e3) + 'h ago';
+      if (d < 7 * 86400e3) return Math.floor(d / 86400e3) + 'd ago';
+      return new Date(ts).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    }
+
+    function renderList() {
+      const q = $('search').value.trim().toLowerCase();
+      const shown = notes
+        .filter(n => !q || (n.title + ' ' + n.body).toLowerCase().includes(q))
+        .sort((a, b) => b.updated - a.updated);
+      list.innerHTML = '';
+      if (!shown.length) {
+        list.innerHTML = '<div class="empty" style="padding:40px 10px"><p>' +
+          (q ? 'No notes match your search.' : 'No notes yet — create your first one.') + '</p></div>';
+        return;
+      }
+      for (const n of shown) {
+        const el = document.createElement('div');
+        el.className = 'note-item' + (n.id === activeId ? ' active' : '');
+        el.innerHTML =
+          '<h3></h3><p></p><div class="when">' + relTime(n.updated) + '</div>';
+        el.querySelector('h3').textContent = n.title || 'Untitled';
+        el.querySelector('p').textContent = n.body.replace(/\n+/g, ' ').slice(0, 80) || 'Empty note';
+        el.onclick = () => open(n.id);
+        list.appendChild(el);
+      }
+    }
+
+    function open(id) {
+      activeId = id;
+      const n = byId(id);
+      if (!n) return closeEditor();
+      editor.hidden = false;
+      emptySel.style.display = 'none';
+      titleEl.value = n.title;
+      bodyEl.value = n.body;
+      updateMeta(n);
+      app.classList.add('editing');
+      renderList();
+      if (window.innerWidth > 760 && !n.title && !n.body) titleEl.focus();
+    }
+
+    function closeEditor() {
+      activeId = null;
+      editor.hidden = true;
+      emptySel.style.display = '';
+      app.classList.remove('editing');
+      renderList();
+    }
+
+    function updateMeta(n) {
+      metaEl.textContent = 'Edited ' + relTime(n.updated);
+      const words = n.body.trim() ? n.body.trim().split(/\s+/).length : 0;
+      countEl.textContent = words + (words === 1 ? ' word' : ' words');
+    }
+
+    function onEdit() {
+      const n = byId(activeId);
+      if (!n) return;
+      n.title = titleEl.value;
+      n.body = bodyEl.value;
+      n.updated = Date.now();
+      updateMeta(n);
+      clearTimeout(saveTimer);
+      saveTimer = setTimeout(() => { save(); renderList(); }, 400);
+    }
+
+    $('newBtn').onclick = () => {
+      const n = { id: crypto.randomUUID(), title: '', body: '', updated: Date.now() };
+      notes.push(n);
+      save();
+      open(n.id);
+      titleEl.focus();
+    };
+
+    $('delBtn').onclick = () => {
+      const n = byId(activeId);
+      if (!n) return;
+      if ((n.title || n.body) && !confirm('Delete this note?')) return;
+      notes = notes.filter(x => x.id !== activeId);
+      save();
+      closeEditor();
+    };
+
+    $('backBtn').onclick = () => { app.classList.remove('editing'); renderList(); };
+    $('search').oninput = renderList;
+    titleEl.oninput = onEdit;
+    bodyEl.oninput = onEdit;
+
+    renderList();
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

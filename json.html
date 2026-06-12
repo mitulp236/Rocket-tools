@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>JSON Formatter, Validator &amp; Viewer — JSON to YAML/CSV | Rocket Tools</title>
+  <meta name="description" content="Format, validate and explore JSON with a collapsible tree view. Convert JSON to YAML or CSV and back — instantly, privately, in your browser." />
+  <link rel="canonical" href="https://rocket-tools.app/json.html" />
+  <meta property="og:site_name" content="Rocket Tools" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="JSON Formatter, Validator &amp; Viewer — JSON to YAML/CSV" />
+  <meta property="og:description" content="Format, validate and explore JSON with a tree view. Convert to YAML or CSV — instantly, privately, in your browser." />
+  <meta property="og:url" content="https://rocket-tools.app/json.html" />
+  <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta name="theme-color" content="#FDFAF5" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"JSON Studio","url":"https://rocket-tools.app/json.html","applicationCategory":"DeveloperApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"JSON formatter, validator, tree viewer and converter to YAML and CSV."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"JSON Studio","item":"https://rocket-tools.app/json.html"}]}]}</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    .wrap {
+      max-width: 1240px; margin: 0 auto;
+      padding: 18px 18px 30px;
+      height: calc(100vh - 55px);
+      display: flex; flex-direction: column; gap: 14px;
+    }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+    .toolbar .gap { width: 10px; }
+    .toolbar .right { margin-left: auto; display: flex; gap: 8px; }
+
+    .panes {
+      flex: 1; min-height: 0;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    }
+    @media (max-width: 860px) {
+      .panes { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+      .wrap { height: auto; min-height: calc(100vh - 55px); }
+      .panes { min-height: 70vh; }
+    }
+    .pane {
+      display: flex; flex-direction: column; min-height: 0;
+      background: var(--card);
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .pane-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--line);
+      font-size: 11.5px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .pane-head .right { margin-left: auto; display: flex; gap: 6px; }
+    textarea#input {
+      flex: 1; resize: none; border: none; background: var(--bg);
+      font-family: var(--mono); font-size: 13px; line-height: 1.6;
+      color: var(--ink);
+      padding: 16px 18px;
+      tab-size: 2;
+    }
+    textarea#input:focus { outline: none; }
+    #output {
+      flex: 1; overflow: auto;
+      background: var(--bg);
+      padding: 16px 18px;
+      font-family: var(--mono); font-size: 13px; line-height: 1.6;
+      white-space: pre;
+    }
+    #output.tree-mode { white-space: normal; }
+
+    .key  { color: #8A6E3A; font-weight: 600; }
+    .str  { color: #4C7A4C; }
+    .num  { color: #B05B4C; }
+    .bool { color: #C8A96E; font-weight: 600; }
+    .null { color: var(--muted); font-style: italic; }
+
+    /* tree view */
+    #output details { margin-left: 0; }
+    #output .kids { margin-left: 18px; border-left: 1.5px solid var(--line); padding-left: 12px; }
+    #output summary {
+      cursor: pointer; list-style: none;
+      padding: 1.5px 0;
+      border-radius: 6px;
+      user-select: none;
+    }
+    #output summary:hover { background: var(--card); }
+    #output summary::before {
+      content: '▸'; display: inline-block;
+      color: var(--gold); margin-right: 6px;
+      transition: transform 0.15s;
+      font-size: 11px;
+    }
+    #output details[open] > summary::before { transform: rotate(90deg); }
+    #output .leaf { padding: 1.5px 0; }
+    #output .tmeta { color: var(--muted); font-size: 11px; margin-left: 8px; }
+
+    .statusbar {
+      display: flex; align-items: center; gap: 14px;
+      font-size: 12.5px; font-weight: 500; color: var(--muted);
+      padding: 0 4px;
+      min-height: 20px;
+    }
+    .statusbar .ok { color: var(--good); font-weight: 600; }
+    .statusbar .err { color: var(--bad); font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="nav-home" href="./"><svg width="21" height="21" viewBox="0 0 512 512"><circle cx="256" cy="256" r="240" fill="#C8A96E"/><path d="M256 96c52 38 76 96 76 156 0 22-3 43-10 62h-132c-7-19-10-40-10-62 0-60 24-118 76-156z" fill="#FDFAF5"/><circle cx="256" cy="222" r="26" fill="#C8A96E"/><path d="M190 314l-44 56 62-14M322 314l44 56-62-14" fill="#FDFAF5"/><path d="M256 330c14 18 14 48 0 76-14-28-14-58 0-76z" fill="#F0B45C"/></svg><span>Rocket Tools</span></a>
+    <span class="nav-sep">/</span>
+    <h1 class="nav-title">JSON Studio</h1>
+    <div class="spacer"></div>
+    <span class="hint">runs entirely in your browser</span>
+  </div>
+
+  <div class="wrap">
+    <div class="toolbar">
+      <button class="btn btn-dark btn-sm" data-act="format">Format</button>
+      <button class="btn btn-ghost btn-sm" data-act="minify">Minify</button>
+      <button class="btn btn-ghost btn-sm" data-act="sort">Sort keys</button>
+      <button class="btn btn-ghost btn-sm" data-act="tree">Tree view</button>
+      <span class="gap"></span>
+      <button class="btn btn-ghost btn-sm" data-act="toyaml">→ YAML</button>
+      <button class="btn btn-ghost btn-sm" data-act="fromyaml">YAML →</button>
+      <button class="btn btn-ghost btn-sm" data-act="tocsv">→ CSV</button>
+      <div class="right">
+        <button class="btn btn-ghost btn-sm" data-act="sample">Sample</button>
+        <button class="btn btn-danger-ghost btn-sm" data-act="clear">Clear</button>
+      </div>
+    </div>
+
+    <div class="panes">
+      <div class="pane">
+        <div class="pane-head">Input <div class="right"><button class="btn btn-ghost btn-sm" data-act="paste">Paste</button></div></div>
+        <textarea id="input" placeholder='Paste JSON (or YAML) here…' spellcheck="false"></textarea>
+      </div>
+      <div class="pane">
+        <div class="pane-head">Output <span id="outType"></span>
+          <div class="right">
+            <button class="btn btn-ghost btn-sm" data-act="copy">Copy</button>
+            <button class="btn btn-ghost btn-sm" data-act="download">Download</button>
+            <button class="btn btn-ghost btn-sm" data-act="use">⬅ Use as input</button>
+          </div>
+        </div>
+        <div id="output"><span style="color:var(--muted)">Output appears here.</span></div>
+      </div>
+    </div>
+
+    <div class="statusbar" id="status">Paste some JSON to begin — it is validated as you type.</div>
+  </div>
+
+  <script src="https://unpkg.com/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const input = $('#input'), output = $('#output'), status = $('#status'), outType = $('#outType');
+    let outText = '', outExt = 'json';
+
+    const KEY = 'rocket.json.v1';
+    input.value = localStorage.getItem(KEY) || '';
+
+    const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    function highlight(json) {
+      return esc(json).replace(
+        /("(?:\\u[\da-fA-F]{4}|\\[^u]|[^\\"])*")(\s*:)?|\b(true|false)\b|\bnull\b|-?\b\d+(?:\.\d+)?(?:[eE][+-]?\d+)?\b/g,
+        (m, str, colon, bool) => {
+          if (str) return '<span class="' + (colon ? 'key' : 'str') + '">' + str + '</span>' + (colon || '');
+          if (bool) return '<span class="bool">' + m + '</span>';
+          if (m === 'null') return '<span class="null">null</span>';
+          return '<span class="num">' + m + '</span>';
+        }
+      );
+    }
+
+    function leafHtml(v) {
+      if (typeof v === 'string') return '<span class="str">"' + esc(v) + '"</span>';
+      if (typeof v === 'number') return '<span class="num">' + v + '</span>';
+      if (typeof v === 'boolean') return '<span class="bool">' + v + '</span>';
+      return '<span class="null">null</span>';
+    }
+
+    function treeHtml(v, key, depth) {
+      const k = key === undefined ? '' : '<span class="key">' + esc(String(key)) + '</span>: ';
+      if (v && typeof v === 'object') {
+        const isArr = Array.isArray(v);
+        const entries = isArr ? v.map((x, i) => [i, x]) : Object.entries(v);
+        const open = depth < 2 ? ' open' : '';
+        return '<details' + open + '><summary>' + k +
+          '<span class="tmeta">' + (isArr ? '[' + entries.length + ']' : '{' + entries.length + '}') + '</span></summary>' +
+          '<div class="kids">' + entries.map(([ck, cv]) => treeHtml(cv, ck, depth + 1)).join('') + '</div></details>';
+      }
+      return '<div class="leaf">' + k + leafHtml(v) + '</div>';
+    }
+
+    function sortDeep(v) {
+      if (Array.isArray(v)) return v.map(sortDeep);
+      if (v && typeof v === 'object') {
+        const out = {};
+        for (const k of Object.keys(v).sort()) out[k] = sortDeep(v[k]);
+        return out;
+      }
+      return v;
+    }
+
+    function toCSV(data) {
+      if (!Array.isArray(data) || !data.length || data.some(r => typeof r !== 'object' || r === null || Array.isArray(r)))
+        throw new Error('CSV conversion needs a JSON array of objects, e.g. [{"a":1},{"a":2}]');
+      const cols = [...new Set(data.flatMap(o => Object.keys(o)))];
+      const cell = (v) => {
+        if (v === undefined || v === null) return '';
+        const s = typeof v === 'object' ? JSON.stringify(v) : String(v);
+        return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+      };
+      return [cols.join(','), ...data.map(o => cols.map(c => cell(o[c])).join(','))].join('\n');
+    }
+
+    function parseInput() {
+      const raw = input.value.trim();
+      if (!raw) throw new Error('Input is empty.');
+      return JSON.parse(raw);
+    }
+
+    function fmtSize(n) {
+      return n < 1024 ? n + ' B' : n < 1048576 ? (n / 1024).toFixed(1) + ' KB' : (n / 1048576).toFixed(2) + ' MB';
+    }
+
+    function setOutput(text, ext, label, isTreeData) {
+      outText = text; outExt = ext;
+      outType.textContent = '· ' + label;
+      output.classList.toggle('tree-mode', !!isTreeData);
+      if (isTreeData) output.innerHTML = treeHtml(isTreeData, undefined, 0);
+      else if (ext === 'json') output.innerHTML = highlight(text);
+      else output.textContent = text;
+    }
+
+    function ok(msg) { status.innerHTML = '<span class="ok">✓</span> ' + esc(msg); }
+    function err(e) { status.innerHTML = '<span class="err">✕ ' + esc(e.message || String(e)) + '</span>'; }
+
+    function liveValidate() {
+      localStorage.setItem(KEY, input.value);
+      const raw = input.value.trim();
+      if (!raw) { status.textContent = 'Paste some JSON to begin — it is validated as you type.'; return; }
+      try {
+        JSON.parse(raw);
+        ok('Valid JSON · ' + fmtSize(new Blob([raw]).size));
+      } catch (e) {
+        const m = /position (\d+)/.exec(e.message);
+        if (m) {
+          const pos = +m[1];
+          const line = raw.slice(0, pos).split('\n').length;
+          err(new Error('Invalid JSON near line ' + line + ' — ' + e.message));
+        } else err(e);
+      }
+    }
+
+    const actions = {
+      format() { const d = parseInput(); setOutput(JSON.stringify(d, null, 2), 'json', 'JSON'); ok('Formatted'); },
+      minify() { const d = parseInput(); const s = JSON.stringify(d); setOutput(s, 'json', 'JSON · minified'); ok('Minified to ' + fmtSize(new Blob([s]).size)); },
+      sort()   { const d = parseInput(); setOutput(JSON.stringify(sortDeep(d), null, 2), 'json', 'JSON · sorted'); ok('Keys sorted recursively'); },
+      tree()   { const d = parseInput(); setOutput(JSON.stringify(d, null, 2), 'json', 'Tree', d); ok('Tree view — click rows to expand'); },
+      toyaml() { const d = parseInput(); setOutput(jsyaml.dump(d, { indent: 2, lineWidth: 100 }), 'yaml', 'YAML'); ok('Converted to YAML'); },
+      fromyaml() {
+        const raw = input.value.trim();
+        if (!raw) throw new Error('Input is empty.');
+        const d = jsyaml.load(raw);
+        setOutput(JSON.stringify(d, null, 2), 'json', 'JSON · from YAML'); ok('YAML parsed to JSON');
+      },
+      tocsv()  { const d = parseInput(); setOutput(toCSV(d), 'csv', 'CSV'); ok('Converted to CSV'); },
+      async copy() {
+        if (!outText) throw new Error('Nothing to copy yet.');
+        await navigator.clipboard.writeText(outText); ok('Copied to clipboard');
+      },
+      download() {
+        if (!outText) throw new Error('Nothing to download yet.');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([outText]));
+        a.download = 'data.' + outExt;
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+        ok('Downloaded data.' + outExt);
+      },
+      use() {
+        if (!outText) throw new Error('Nothing to move yet.');
+        input.value = outText; liveValidate(); ok('Output moved to input');
+      },
+      async paste() {
+        input.value = await navigator.clipboard.readText(); liveValidate();
+      },
+      clear() { input.value = ''; setOutput('', 'json', ''); output.innerHTML = '<span style="color:var(--muted)">Output appears here.</span>'; outType.textContent = ''; liveValidate(); },
+      sample() {
+        input.value = JSON.stringify({
+          project: 'Rocket Tools',
+          version: 2,
+          private: true,
+          tools: [
+            { name: 'PeerDrop', kind: 'transfer', p2p: true },
+            { name: 'Whiteboard', kind: 'canvas', p2p: false },
+            { name: 'JSON Studio', kind: 'data', p2p: false }
+          ],
+          theme: { bg: '#FDFAF5', ink: '#1A1A1A', accent: '#C8A96E' }
+        }, null, 2);
+        liveValidate();
+      },
+    };
+
+    document.addEventListener('click', async (e) => {
+      const b = e.target.closest('[data-act]');
+      if (!b) return;
+      try { await actions[b.dataset.act](); } catch (ex) { err(ex); }
+    });
+
+    input.addEventListener('input', liveValidate);
+    liveValidate();
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

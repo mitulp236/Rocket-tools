@@ -1,0 +1,14 @@
+{
+  "name": "Rocket Tools — tiny, private, everyday tools",
+  "short_name": "Rocket Tools",
+  "description": "Six tiny apps — file transfer, whiteboard, notes, todos, JSON studio, markdown. No accounts, no servers.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FDFAF5",
+  "theme_color": "#FDFAF5",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

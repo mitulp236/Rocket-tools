@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Free Online Screen Recorder — No Install, No Watermark | Rocket Tools</title>
+  <meta name="description" content="Record a tab, window or your whole screen straight from the browser. Optional microphone, WebM download — captured on-device, never uploaded." />
+  <link rel="canonical" href="https://rocket-tools.app/record.html" />
+  <meta property="og:site_name" content="Rocket Tools" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Free Online Screen Recorder — No Install, No Watermark" />
+  <meta property="og:description" content="Record a tab, window or screen from the browser with optional mic. Saved on-device, never uploaded." />
+  <meta property="og:url" content="https://rocket-tools.app/record.html" />
+  <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta name="theme-color" content="#FDFAF5" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"Screen Recorder","url":"https://rocket-tools.app/record.html","applicationCategory":"MultimediaApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Browser-based screen recorder with optional microphone and on-device WebM export."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"Screen Recorder","item":"https://rocket-tools.app/record.html"}]}]}</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    .wrap { max-width: 640px; margin: 0 auto; padding: 36px 20px 60px; }
+    .panel {
+      background: var(--card); border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.6); box-shadow: var(--shadow);
+      padding: 30px 28px; text-align: center;
+    }
+    .big-icon {
+      width: 78px; height: 78px; margin: 0 auto 20px;
+      border-radius: 24px; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 10px 26px -10px rgba(26,26,26,0.2);
+    }
+    h2.t { font-size: 21px; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 6px; }
+    p.s { font-size: 13.5px; color: var(--muted); max-width: 380px; margin: 0 auto 24px; }
+
+    .opts { display: flex; justify-content: center; gap: 18px; margin-bottom: 24px; flex-wrap: wrap; }
+    .opt {
+      display: flex; align-items: center; gap: 9px;
+      font-size: 13.5px; font-weight: 600;
+      background: var(--bg); border: 1.5px solid var(--line);
+      padding: 10px 16px; border-radius: 13px;
+      cursor: pointer; user-select: none;
+      transition: border-color 0.2s;
+    }
+    .opt:hover { border-color: var(--gold); }
+    .opt input { accent-color: #C8A96E; width: 16px; height: 16px; }
+
+    .rec-live { display: none; }
+    .rec-live.on { display: block; }
+    .timer {
+      font-size: 46px; font-weight: 800; letter-spacing: -0.02em;
+      font-variant-numeric: tabular-nums;
+      margin-bottom: 8px;
+      display: flex; align-items: center; justify-content: center; gap: 14px;
+    }
+    .reddot {
+      width: 16px; height: 16px; border-radius: 50%;
+      background: #C0392B;
+      animation: blink 1.2s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+    .size-live { font-size: 13px; color: var(--muted); margin-bottom: 22px; font-variant-numeric: tabular-nums; }
+
+    video.preview {
+      width: 100%; border-radius: 16px; background: #111;
+      box-shadow: var(--shadow); margin-bottom: 18px;
+    }
+    .done-meta { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
+    .btn-row { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    .note { text-align: center; color: var(--muted); font-size: 12.5px; margin-top: 22px; line-height: 1.6; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="nav-home" href="./"><svg width="21" height="21" viewBox="0 0 512 512"><circle cx="256" cy="256" r="240" fill="#C8A96E"/><path d="M256 96c52 38 76 96 76 156 0 22-3 43-10 62h-132c-7-19-10-40-10-62 0-60 24-118 76-156z" fill="#FDFAF5"/><circle cx="256" cy="222" r="26" fill="#C8A96E"/><path d="M190 314l-44 56 62-14M322 314l44 56-62-14" fill="#FDFAF5"/><path d="M256 330c14 18 14 48 0 76-14-28-14-58 0-76z" fill="#F0B45C"/></svg><span>Rocket Tools</span></a>
+    <span class="nav-sep">/</span>
+    <h1 class="nav-title">Screen Recorder</h1>
+    <div class="spacer"></div>
+    <span class="hint">recorded on-device, never uploaded</span>
+  </div>
+
+  <div class="wrap">
+    <!-- idle -->
+    <div class="panel" id="idle">
+      <div class="big-icon">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="15" height="13" rx="3"/><path d="M22 8.5l-5 3 5 3z" fill="#C8A96E" stroke="none"/><circle cx="9.5" cy="10.5" r="2.6"/></svg>
+      </div>
+      <h2 class="t">Record your screen</h2>
+      <p class="s">Capture a tab, window or your whole screen. The video is encoded in your browser and saved straight to your downloads.</p>
+      <div class="opts">
+        <label class="opt"><input type="checkbox" id="micOpt" /> Include microphone</label>
+        <label class="opt"><input type="checkbox" id="sysOpt" checked /> Include tab/system audio</label>
+      </div>
+      <button class="btn btn-gold" id="startBtn" style="min-width:220px">● Start recording</button>
+      <div class="note" id="supportNote"></div>
+    </div>
+
+    <!-- recording -->
+    <div class="panel rec-live" id="live">
+      <div class="timer"><span class="reddot"></span><span id="clock">0:00</span></div>
+      <div class="size-live" id="liveSize">0 MB captured</div>
+      <button class="btn btn-dark" id="stopBtn" style="min-width:220px">■ Stop recording</button>
+      <div class="note">You can also stop from the browser's own "stop sharing" bar.</div>
+    </div>
+
+    <!-- done -->
+    <div class="panel rec-live" id="done">
+      <h2 class="t">Recording ready</h2>
+      <div class="done-meta" id="doneMeta"></div>
+      <video class="preview" id="playback" controls></video>
+      <div class="btn-row">
+        <a class="btn btn-gold" id="dlBtn" download>⬇ Download video</a>
+        <button class="btn btn-ghost" id="againBtn">Record again</button>
+      </div>
+    </div>
+
+    <div class="note">Recordings use the WebM format, which plays in every modern browser and imports into most editors.</div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    let recorder = null, chunks = [], tick = null, t0 = 0, bytes = 0, streams = [];
+
+    const supported = !!(navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia && window.MediaRecorder);
+    if (!supported) {
+      $('startBtn').disabled = true;
+      $('supportNote').textContent = 'Screen capture is not supported in this browser — try Chrome, Edge or Firefox on desktop.';
+    }
+
+    const mime = ['video/webm;codecs=vp9,opus', 'video/webm;codecs=vp8,opus', 'video/webm']
+      .find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || '';
+
+    function show(id) {
+      ['idle', 'live', 'done'].forEach(x => $(x).classList.toggle('on', x === id));
+      $('idle').style.display = id === 'idle' ? '' : 'none';
+    }
+
+    const fmtMB = (n) => (n / 1048576).toFixed(1) + ' MB';
+    const fmtClock = (s) => Math.floor(s / 60) + ':' + String(Math.floor(s % 60)).padStart(2, '0');
+
+    $('startBtn').onclick = async () => {
+      try {
+        const display = await navigator.mediaDevices.getDisplayMedia({
+          video: { frameRate: 30 },
+          audio: $('sysOpt').checked,
+        });
+        streams = [display];
+        let audioTracks = display.getAudioTracks();
+
+        if ($('micOpt').checked) {
+          try {
+            const mic = await navigator.mediaDevices.getUserMedia({ audio: true });
+            streams.push(mic);
+            if (audioTracks.length) {
+              // mix system + mic audio into one track
+              const ctx = new AudioContext();
+              const dest = ctx.createMediaStreamDestination();
+              ctx.createMediaStreamSource(new MediaStream(audioTracks)).connect(dest);
+              ctx.createMediaStreamSource(mic).connect(dest);
+              audioTracks = dest.stream.getAudioTracks();
+              streams.push({ getTracks: () => [], _ctx: ctx });
+            } else {
+              audioTracks = mic.getAudioTracks();
+            }
+          } catch { /* mic denied — record without it */ }
+        }
+
+        const combined = new MediaStream([...display.getVideoTracks(), ...audioTracks]);
+        chunks = []; bytes = 0;
+        recorder = new MediaRecorder(combined, mime ? { mimeType: mime } : undefined);
+        recorder.ondataavailable = (e) => { if (e.data.size) { chunks.push(e.data); bytes += e.data.size; } };
+        recorder.onstop = finish;
+        display.getVideoTracks()[0].addEventListener('ended', () => stop());
+        recorder.start(1000);
+
+        t0 = performance.now();
+        tick = setInterval(() => {
+          $('clock').textContent = fmtClock((performance.now() - t0) / 1000);
+          $('liveSize').textContent = fmtMB(bytes) + ' captured';
+        }, 500);
+        show('live');
+      } catch {
+        // user cancelled the share dialog — stay idle
+      }
+    };
+
+    function stop() {
+      if (recorder && recorder.state !== 'inactive') recorder.stop();
+    }
+    $('stopBtn').onclick = stop;
+
+    function finish() {
+      clearInterval(tick);
+      streams.forEach(s => { (s.getTracks ? s.getTracks() : []).forEach(t => t.stop()); if (s._ctx) s._ctx.close(); });
+      streams = [];
+      const blob = new Blob(chunks, { type: mime || 'video/webm' });
+      chunks = [];
+      const url = URL.createObjectURL(blob);
+      const secs = (performance.now() - t0) / 1000;
+      $('playback').src = url;
+      $('dlBtn').href = url;
+      $('dlBtn').download = 'recording-' + new Date().toISOString().slice(0, 19).replace(/[T:]/g, '-') + '.webm';
+      $('doneMeta').textContent = fmtClock(secs) + ' · ' + fmtMB(blob.size) + ' · WebM';
+      show('done');
+    }
+
+    $('againBtn').onclick = () => {
+      URL.revokeObjectURL($('playback').src);
+      $('playback').removeAttribute('src');
+      show('idle');
+    };
+
+    window.addEventListener('pagehide', () => { stop(); });
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>
