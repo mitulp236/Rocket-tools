@@ -4,12 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Meet — Free P2P Video Calls in the Browser, No Account | Rocket Tools</title>
-  <meta name="description" content="Start a video call with one click and share the link. Peer-to-peer WebRTC video meetings with emoji identities, screen sharing and a guest limit — no account, no install, no servers." />
+  <meta name="description" content="Start a video call with one click and share the link. Peer-to-peer WebRTC video meetings with fun avatars, screen sharing and a guest limit — no account, no install, no servers." />
   <link rel="canonical" href="https://rocket-tools.app/meet.html" />
   <meta property="og:site_name" content="Rocket Tools" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Meet — Free P2P Video Calls in the Browser" />
-  <meta property="og:description" content="Start a video call with one click and share the link. Emoji identities, screen sharing, guest limits — no account, no servers." />
+  <meta property="og:description" content="Start a video call with one click and share the link. Fun avatars, screen sharing, guest limits — no account, no servers." />
   <meta property="og:url" content="https://rocket-tools.app/meet.html" />
   <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
   <meta property="og:image:width" content="1200" />
@@ -17,7 +17,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
   <meta name="theme-color" content="#FDFAF5" />
-  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"Meet","url":"https://rocket-tools.app/meet.html","applicationCategory":"CommunicationApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Peer-to-peer video calls with shareable links, emoji identities, screen sharing and guest limits."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"Meet","item":"https://rocket-tools.app/meet.html"}]}]}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"Meet","url":"https://rocket-tools.app/meet.html","applicationCategory":"CommunicationApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Peer-to-peer video calls with shareable links, avatar identities, screen sharing and guest limits."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"Meet","item":"https://rocket-tools.app/meet.html"}]}]}</script>
   <link rel="manifest" href="manifest.webmanifest" />
   <link rel="icon" href="icon.svg" type="image/svg+xml" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -276,6 +276,55 @@
     .hero-mini h2 { font-size: clamp(23px, 5vw, 29px); font-weight: 800; letter-spacing: -0.035em; }
     .hero-mini h2 em { font-style: normal; color: var(--gold); }
     .hero-mini p { font-size: 13.5px; color: var(--muted); margin-top: 4px; }
+
+    /* ── avatar rendering ── */
+    .emoji-grid button {
+      display: flex; align-items: center; justify-content: center;
+      padding: 0; overflow: hidden;
+      animation: avPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      animation-delay: calc(var(--i, 0) * 24ms);
+    }
+    .emoji-grid button img { width: 100%; height: 100%; display: block; }
+    @keyframes avPop {
+      from { opacity: 0; transform: scale(0.4); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .me-emoji { overflow: hidden; }
+    .me-emoji img { width: 100%; height: 100%; display: block; border-radius: 11px; }
+    .avatar-fallback img.big {
+      width: 96px; height: 96px; border-radius: 50%;
+      box-shadow: 0 12px 34px -12px rgba(0, 0, 0, 0.55);
+      animation: avPop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    }
+    .avatar-fallback span.big { font-size: 64px; }
+    .tile .avatar img {
+      width: clamp(70px, 24%, 130px);
+      aspect-ratio: 1; border-radius: 50%;
+      box-shadow: 0 14px 36px -14px rgba(0, 0, 0, 0.6);
+    }
+    .tile .chip img.e { width: 18px; height: 18px; border-radius: 50%; }
+
+    /* ── entrance choreography ── */
+    .hero-mini { animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    .mode-switch { animation: fadeUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.06s both; }
+    .lobby-card { animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both; }
+    .controls .ctl { animation: ctlUp 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both; }
+    .controls .ctl:nth-child(1) { animation-delay: 0.05s; }
+    .controls .ctl:nth-child(2) { animation-delay: 0.10s; }
+    .controls .ctl:nth-child(3) { animation-delay: 0.15s; }
+    .controls .ctl:nth-child(4) { animation-delay: 0.20s; }
+    .controls .ctl:nth-child(5) { animation-delay: 0.25s; }
+    @keyframes ctlUp {
+      from { opacity: 0; transform: translateY(22px) scale(0.7); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .tile { transition: transform 0.25s, box-shadow 0.25s; }
+    .tile:hover { transform: translateY(-3px); box-shadow: 0 22px 46px -18px rgba(26, 26, 26, 0.55); }
+    .tile .chip { animation: chipIn 0.45s 0.2s cubic-bezier(0.22, 1, 0.36, 1) both; }
+    @keyframes chipIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
   </style>
 </head>
 <body>
@@ -302,8 +351,8 @@
 
     <div class="lobby-card">
       <div class="preview-box">
-        <video id="previewVid" autoplay muted playsinline></video>
-        <div class="avatar-fallback" id="previewAvatar" hidden>😀</div>
+        <video id="previewVid" autoplay muted playsinline hidden></video>
+        <div class="avatar-fallback" id="previewAvatar"></div>
         <div class="preview-toggles">
           <button class="ctl" id="lobbyMic" title="Toggle microphone" style="width:42px;height:42px"></button>
           <button class="ctl" id="lobbyCam" title="Toggle camera" style="width:42px;height:42px"></button>
@@ -315,12 +364,12 @@
         <div class="code-input-row" id="codeInputs"></div>
       </div>
 
-      <div class="lob-label">Pick your emoji</div>
+      <div class="lob-label">Pick your avatar</div>
       <div class="emoji-grid" id="emojiGrid"></div>
 
       <div class="lob-label">Your name</div>
       <div class="name-row">
-        <div class="me-emoji" id="meEmoji">😀</div>
+        <div class="me-emoji" id="meEmoji"></div>
         <input class="field" id="nameInput" placeholder="e.g. Maya" maxlength="24" autocomplete="off" />
       </div>
 
@@ -361,13 +410,43 @@
   <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
   <script>
     const $ = (id) => document.getElementById(id);
+    const escapeHtml = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     const PREFIX = 'rkt-meet-';
     const CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-    const EMOJIS = ['😀','😎','🦊','🐼','🚀','🌟','🦁','🐙','🦄','🌈','🍀','🔥','🐸','🐻','🌸','🍕','🎧','🤖','👻','🐯','🦉','🐳','🎨','🍩'];
+
+    // Avatar catalog — illustrated characters (DiceBear, CC0 art served as SVG)
+    // plus a few classic emojis. Only the catalog string travels to peers.
+    const dice = (style, seed) =>
+      'https://api.dicebear.com/9.x/' + style + '/svg?seed=' + seed + '&backgroundColor=F0EBE1&radius=50&size=192';
+    const AVATARS = [
+      dice('adventurer', 'Ragnar'),    // norse raider
+      dice('adventurer', 'Freya'),     // shieldmaiden
+      dice('adventurer', 'Bjorn'),     // warrior
+      dice('adventurer', 'Valkyrie'),
+      dice('adventurer', 'Kenji'),     // ronin
+      dice('avataaars', 'Maverick'),   // modern cartoon
+      dice('avataaars', 'Nova'),
+      dice('avataaars', 'Indie'),
+      dice('big-ears', 'Scout'),
+      dice('big-ears', 'Pixel'),
+      dice('bottts', 'Robo'),          // robots
+      dice('bottts', 'Zap'),
+      '😎', '🦊', '🐼', '🚀', '🤖', '👻',
+    ];
+    const isUrlAvatar = (a) => /^https?:/.test(String(a));
+    // Peers send their avatar string — render only whitelisted CDN URLs as
+    // images, everything else as (escaped) emoji text.
+    const avatarHTML = (a, cls) => {
+      a = String(a || '🙂');
+      if (a.startsWith('https://api.dicebear.com/')) {
+        return '<img class="' + (cls || '') + '" src="' + a.replace(/[<>"']/g, '') + '" alt="" />';
+      }
+      return '<span class="' + (cls || '') + '">' + escapeHtml(a.slice(0, 8)) + '</span>';
+    };
 
     const genCode = () => Array.from(crypto.getRandomValues(new Uint8Array(6))).map(b => CODE_CHARS[b % CODE_CHARS.length]).join('');
 
-    const me = { name: '', emoji: '😀' };
+    const me = { name: '', avatar: AVATARS[0] };
     let mode = 'host';            // 'host' | 'join'
     let code = '';
     let limit = 4;
@@ -375,7 +454,8 @@
     let localStream = null;
     let cameraVideoTrack = null;  // the camera (or synthetic) track to restore after screen share
     let screenTrack = null;
-    let micOn = true, camOn = true;
+    let micOn = false, camOn = false;   // privacy-first: join muted, camera off
+    let avatarBmpPromise = null;        // cached bitmap of the chosen avatar art
     let synthetic = false;        // no real camera available
     const members = new Map();    // peerId -> {call?, conn?, name, emoji, el}
     let inCall = false;
@@ -393,19 +473,29 @@
     const urlCode = (new URLSearchParams(location.search).get('code') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
     if (urlCode) { mode = 'join'; code = urlCode; }
 
-    // emoji grid
-    EMOJIS.forEach((e, i) => {
+    // avatar grid — default pick is random
+    const startIdx = Math.floor(Math.random() * AVATARS.length);
+    me.avatar = AVATARS[startIdx];
+
+    function renderMeAvatar() {
+      $('meEmoji').innerHTML = avatarHTML(me.avatar);
+      $('previewAvatar').innerHTML = avatarHTML(me.avatar, 'big');
+      avatarBmpPromise = null; // synthetic video frame re-fetches the art
+    }
+
+    AVATARS.forEach((a, i) => {
       const b = document.createElement('button');
-      b.textContent = e;
-      if (i === 0) b.classList.add('sel');
+      b.style.setProperty('--i', i);
+      b.innerHTML = avatarHTML(a);
+      if (i === startIdx) b.classList.add('sel');
       b.onclick = () => {
-        me.emoji = e;
-        $('meEmoji').textContent = e;
-        $('previewAvatar').textContent = e;
+        me.avatar = a;
+        renderMeAvatar();
         document.querySelectorAll('.emoji-grid button').forEach(x => x.classList.toggle('sel', x === b));
       };
       $('emojiGrid').appendChild(b);
     });
+    renderMeAvatar();
 
     // join-code boxes
     const codeInputs = [];
@@ -443,14 +533,33 @@
     if (urlCode) { setMode('join'); $('modeSwitch').style.display = 'none'; }
 
     /* media acquisition with graceful fallback */
+    function avatarBitmap() {
+      if (!isUrlAvatar(me.avatar)) return Promise.resolve(null);
+      if (!avatarBmpPromise) {
+        avatarBmpPromise = fetch(me.avatar)
+          .then(r => r.blob())
+          .then(b => createImageBitmap(b))
+          .catch(() => null);
+      }
+      return avatarBmpPromise;
+    }
+
     function syntheticStream() {
       const c = document.createElement('canvas');
       c.width = 640; c.height = 360;
       const ctx = c.getContext('2d');
-      const draw = () => {
+      const draw = async () => {
         ctx.fillStyle = '#26251F'; ctx.fillRect(0, 0, 640, 360);
-        ctx.font = '110px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(me.emoji, 320, 180);
+        const bmp = await avatarBitmap();
+        if (bmp) {
+          ctx.save();
+          ctx.beginPath(); ctx.arc(320, 180, 72, 0, 7); ctx.clip();
+          ctx.drawImage(bmp, 248, 108, 144, 144);
+          ctx.restore();
+        } else {
+          ctx.font = '110px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(me.avatar, 320, 180);
+        }
       };
       draw();
       setInterval(draw, 800);
@@ -473,11 +582,32 @@
       }
     }
 
+    let mediaSettled = false;
     async function initPreview() {
-      localStream = await getMedia();
+      const stream = await getMedia();
+      if (mediaSettled) { stream.getTracks().forEach(t => t.stop()); return; }
+      mediaSettled = true;
+      localStream = stream;
       cameraVideoTrack = localStream.getVideoTracks()[0] || null;
+      // apply the privacy-first defaults to the real tracks
+      localStream.getAudioTracks().forEach(t => t.enabled = micOn);
+      localStream.getVideoTracks().forEach(t => t.enabled = camOn);
       $('previewVid').srcObject = localStream;
-      if (synthetic) { $('previewVid').hidden = true; $('previewAvatar').hidden = false; toast('No camera found — joining with your emoji'); }
+      const showVid = camOn && !synthetic;
+      $('previewVid').hidden = !showVid;
+      $('previewAvatar').hidden = showVid;
+      if (synthetic) toast('No camera found — joining with your avatar');
+      paintLobbyToggles();
+    }
+    // if the permission prompt is still pending when the user hits Start,
+    // join with the synthetic avatar stream instead of blocking forever
+    function ensureMediaFallback() {
+      if (mediaSettled) return;
+      mediaSettled = true;
+      localStream = syntheticStream();
+      cameraVideoTrack = localStream.getVideoTracks()[0] || null;
+      $('previewVid').hidden = true;
+      $('previewAvatar').hidden = false;
       paintLobbyToggles();
     }
 
@@ -514,6 +644,8 @@
       me.name = $('nameInput').value.trim() || 'Guest ' + Math.floor(Math.random() * 90 + 10);
       $('goBtn').disabled = true;
       $('goBtn').textContent = 'Connecting…';
+      for (let i = 0; i < 40 && !mediaSettled; i++) await new Promise(r => setTimeout(r, 100));
+      ensureMediaFallback();
       if (mode === 'host') {
         limit = +$('limitSel').value;
         startHost(0);
@@ -550,7 +682,7 @@
       peer.on('call', answerCall);
       peer.on('open', () => {
         const conn = peer.connect(PREFIX + code, { reliable: true });
-        conn.on('open', () => conn.send({ type: 'hello', name: me.name, emoji: me.emoji }));
+        conn.on('open', () => conn.send({ type: 'hello', name: me.name, avatar: me.avatar }));
         conn.on('data', (msg) => {
           if (msg.type === 'full') { conn.close(); showEnd('🚪', 'Meeting is full', 'The host capped this meeting at ' + msg.limit + ' people.'); }
           else if (msg.type === 'welcome') {
@@ -575,7 +707,7 @@
           setTimeout(() => conn.close(), 300);
           return;
         }
-        members.set(conn.peer, { ...(members.get(conn.peer) || {}), conn, name: msg.name, emoji: msg.emoji });
+        members.set(conn.peer, { ...(members.get(conn.peer) || {}), conn, name: msg.name, avatar: msg.avatar });
         conn.send({ type: 'welcome', limit, roster: rosterList() });
         broadcastRoster();
         updateCount();
@@ -585,8 +717,8 @@
         if (m) { removeTile(conn.peer); members.delete(conn.peer); broadcastRoster(); updateCount(); }
       });
     }
-    const rosterList = () => [{ id: peer.id, name: me.name, emoji: me.emoji },
-      ...[...members.entries()].map(([id, m]) => ({ id, name: m.name, emoji: m.emoji }))];
+    const rosterList = () => [{ id: peer.id, name: me.name, avatar: me.avatar },
+      ...[...members.entries()].map(([id, m]) => ({ id, name: m.name, avatar: m.avatar }))];
     function broadcastRoster() {
       const r = { type: 'roster', roster: rosterList() };
       members.forEach(m => { try { m.conn?.send(r); } catch {} });
@@ -598,25 +730,24 @@
       roster.forEach(m => {
         if (m.id === peer.id) return;
         const cur = members.get(m.id) || {};
-        members.set(m.id, { ...cur, name: m.name, emoji: m.emoji });
-        if (cur.el) cur.el.querySelector('.chip').innerHTML = '<span class="e">' + m.emoji + '</span>' + escapeHtml(m.name);
+        members.set(m.id, { ...cur, name: m.name, avatar: m.avatar });
+        if (cur.el) cur.el.querySelector('.chip').innerHTML = avatarHTML(m.avatar, 'e') + escapeHtml(m.name);
       });
       [...members.keys()].forEach(id => {
         if (!ids.has(id)) { removeTile(id); members.delete(id); }
       });
       updateCount();
     }
-    const escapeHtml = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
     /* media calls */
     function callMember(m) {
-      const call = peer.call(m.id, localStream, { metadata: { name: me.name, emoji: me.emoji } });
+      const call = peer.call(m.id, localStream, { metadata: { name: me.name, avatar: me.avatar } });
       wireCall(call, m);
     }
     function answerCall(call) {
       const meta = call.metadata || {};
       const cur = members.get(call.peer) || {};
-      members.set(call.peer, { ...cur, name: cur.name || meta.name || 'Guest', emoji: cur.emoji || meta.emoji || '🙂' });
+      members.set(call.peer, { ...cur, name: cur.name || meta.name || 'Guest', avatar: cur.avatar || meta.avatar || '🙂' });
       call.answer(localStream);
       wireCall(call, members.get(call.peer));
       updateCount();
@@ -676,13 +807,13 @@
       const key = isLocal ? 'me' : id;
       const existing = isLocal ? null : members.get(id);
       if (existing?.el) { existing.el.querySelector('video').srcObject = stream; return; }
-      const info = isLocal ? me : (members.get(id) || { name: 'Guest', emoji: '🙂' });
+      const info = isLocal ? me : (members.get(id) || { name: 'Guest', avatar: '🙂' });
       const el = document.createElement('div');
       el.className = 'tile' + (isLocal && !synthetic ? ' mirror' : '');
       el.dataset.peer = key;
       el.innerHTML = '<video autoplay playsinline ' + (isLocal ? 'muted' : '') + '></video>' +
-        '<div class="avatar">' + info.emoji + '</div>' +
-        '<div class="chip"><span class="e">' + info.emoji + '</span>' + escapeHtml(info.name) + (isLocal ? ' (you)' : '') + '</div>';
+        '<div class="avatar">' + avatarHTML(info.avatar) + '</div>' +
+        '<div class="chip">' + avatarHTML(info.avatar, 'e') + escapeHtml(info.name) + (isLocal ? ' (you)' : '') + '</div>';
       const vid = el.querySelector('video');
       vid.srcObject = stream;
       vid.play().catch(() => {});
@@ -811,6 +942,7 @@
 
     window.addEventListener('pagehide', cleanup);
 
+    paintLobbyToggles();   // icons paint immediately, before media resolves
     initPreview();
 
     if ('serviceWorker' in navigator && location.protocol !== 'file:') {

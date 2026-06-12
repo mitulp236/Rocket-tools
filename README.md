@@ -8,8 +8,8 @@ never leaves your device.
 
 | Tool | File | What it does |
 |---|---|---|
-| **Meet** | `meet.html` | P2P group video calls — shareable link, emoji identities, screen share, host-enforced guest limit (PeerJS mesh) |
-| **PeerDrop** | `peerdrop/` | P2P file transfer of any size over encrypted WebRTC, streamed in 64 KB chunks with backpressure |
+| **Meet** | `meet.html` | P2P group video calls — shareable link, avatar identities (joins muted/camera-off), screen share, host-enforced guest limit (PeerJS mesh) |
+| **PeerDrop** | `peerdrop.html` | P2P file transfer of any size over encrypted WebRTC, streamed in 64 KB chunks with backpressure |
 | **Whiteboard** | `whiteboard.html` | Infinite canvas (embedded Excalidraw), autosaved to localStorage |
 | **Notes** | `notes.html` | Multi-note private notepad with search, autosave and word count |
 | **Todo** | `todo.html` | Minimal task list — filters, drag reorder, clear completed |
@@ -33,7 +33,6 @@ never leaves your device.
   only — media and files always travel directly between peers.
 - **Installable PWA.** `manifest.webmanifest` + `sw.js` (network-first shell,
   cache-first CDN assets) make the suite work offline after the first visit.
-  PeerDrop keeps its own service worker scoped to `peerdrop/`.
 - **Lightweight by default.** Vanilla JS everywhere; React is loaded only by
   the Whiteboard (Excalidraw requires it) and PeerDrop.
 
