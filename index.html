@@ -243,12 +243,20 @@
     </header>
 
     <section class="hero">
-      <div class="eyebrow">Fifteen tools · Zero servers</div>
+      <div class="eyebrow">Sixteen tools · Zero servers</div>
       <h1>Everyday tools,<br /><em>weightless.</em></h1>
-      <p>Fifteen tiny apps that live entirely in your browser. Nothing to install, nothing leaves your device.</p>
+      <p>Sixteen tiny apps that live entirely in your browser. Nothing to install, nothing leaves your device.</p>
     </section>
 
     <main class="grid">
+      <a class="tool" href="vault.html">
+        <div class="ticon">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
+        </div>
+        <h2>Card Vault <span class="arrow">→</span></h2>
+        <p>Store your cards in an Apple Wallet-style stack — AES-256 encrypted behind a master password.</p>
+      </a>
+
       <a class="tool" href="meet.html">
         <div class="ticon">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.8-3 3-4.5 5.5-4.5s4.7 1.5 5.5 4.5"/><circle cx="17.5" cy="9.5" r="2.4"/><path d="M16.5 14.8c2.2.2 3.8 1.5 4.4 3.7"/></svg>
@@ -384,6 +392,7 @@
       'image.html': 'Media', 'pdf.html': 'Docs', 'color.html': 'Design',
       'csv.html': 'Data', 'qr.html': 'Utility', 'record.html': 'Media',
       'sandbox.html': 'Code', 'diagram.html': 'Design', 'meet.html': 'Live',
+      'vault.html': 'Secure',
     };
     document.querySelectorAll('a.tool').forEach((a) => {
       const t = TAGS[a.getAttribute('href')];

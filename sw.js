@@ -2,10 +2,11 @@
    the suite installs and works offline. PeerDrop has its own worker scoped to
    /peerdrop/. All tool data lives in localStorage, never here. */
 
-const CACHE = 'rocket-tools-v5';
+const CACHE = 'rocket-tools-v7';
 const SHELL = [
   './',
   './index.html',
+  './vault.html',
   './whiteboard.html',
   './notes.html',
   './todo.html',

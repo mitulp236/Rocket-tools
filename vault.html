@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Card Vault — Encrypted Offline Card Wallet | Rocket Tools</title>
+  <meta name="description" content="Store your credit & debit cards in a beautiful Apple Wallet-style stack. Locked with a master password and AES-256 encrypted — everything stays on your device." />
+  <link rel="canonical" href="https://rocket-tools.app/vault.html" />
+  <meta property="og:site_name" content="Rocket Tools" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Card Vault — Encrypted Offline Card Wallet" />
+  <meta property="og:description" content="An Apple Wallet-style card vault, AES-256 encrypted with a master password. Nothing leaves your device." />
+  <meta property="og:url" content="https://rocket-tools.app/vault.html" />
+  <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta name="theme-color" content="#FDFAF5" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"Card Vault","url":"https://rocket-tools.app/vault.html","applicationCategory":"FinanceApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"AES-256 encrypted, offline card wallet locked with a master password."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"Card Vault","item":"https://rocket-tools.app/vault.html"}]}]}</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    /* ─────────────── layout ─────────────── */
+    .wrap { max-width: 480px; margin: 0 auto; padding: 22px 18px 120px; }
+
+    /* ─────────────── lock / setup ─────────────── */
+    .lock { max-width: 380px; margin: 8vh auto 0; padding: 0 18px; }
+    .lock .card { padding: 30px 26px; }
+    .lock-brand { display: flex; align-items: center; gap: 13px; margin-bottom: 24px; }
+    .lock-mark {
+      width: 52px; height: 52px; border-radius: 15px; flex-shrink: 0;
+      display: grid; place-items: center; color: #fff;
+      background: linear-gradient(135deg, var(--gold), #B3934F);
+      box-shadow: 0 10px 22px -10px var(--gold);
+    }
+    .lock-brand h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.02em; }
+    .lock-brand p { font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+    .fieldset { margin-bottom: 15px; }
+    .fieldset label { display: block; font-size: 12.5px; font-weight: 600; color: var(--muted); margin-bottom: 7px; }
+    .pwrap { position: relative; display: flex; }
+    .pwrap input.field { flex: 1; padding-right: 44px; width: 100%; }
+    .eye {
+      position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+      width: 34px; height: 34px; border: none; background: none; cursor: pointer;
+      border-radius: 9px; color: var(--muted); display: grid; place-items: center;
+    }
+    .eye:hover { background: var(--bg); color: var(--ink); }
+    .lock-err { color: var(--bad); font-size: 13px; font-weight: 600; margin: -4px 0 12px; }
+    .lock-note { font-size: 12px; line-height: 1.6; color: var(--muted); margin-top: 18px; }
+    .lock-wipe { display: block; width: 100%; text-align: center; margin-top: 14px; font-size: 12.5px; font-weight: 600; color: var(--bad); background: none; border: none; cursor: pointer; }
+    .full { width: 100%; }
+
+    /* ─────────────── wallet stack (Apple Wallet style) ─────────────── */
+    .wallet { --cardH: 232px; --peek: 64px; position: relative; padding-top: 6px; }
+    @media (max-width: 460px) { .wallet { --cardH: 208px; --peek: 60px; } }
+
+    .wcard {
+      position: relative;
+      margin-top: calc(var(--peek) - var(--cardH));
+      transition: margin 0.42s cubic-bezier(0.32, 0.72, 0, 1);
+      animation: fadeUp 0.4s both;
+    }
+    .wcard:first-child { margin-top: 0; }
+    /* spread a touch on hover (desktop) so the stack breathes */
+    @media (hover: hover) {
+      .wallet:hover .wcard { margin-top: calc(var(--peek) + 10px - var(--cardH)); }
+      .wallet:hover .wcard:first-child { margin-top: 0; }
+    }
+    /* open card + the one after it detach from the stack so it's fully visible */
+    .wcard.open,
+    .wcard.open + .wcard,
+    .wallet:hover .wcard.open,
+    .wallet:hover .wcard.open + .wcard { margin-top: 16px; }
+
+    /* the credit-card face */
+    .face {
+      position: relative;
+      height: var(--cardH);
+      border-radius: 17px;
+      overflow: hidden;
+      cursor: pointer;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      padding: 19px 21px;
+      box-shadow: 0 1px 2px rgba(0,0,0,.18), 0 10px 24px -12px rgba(26,26,26,.55), 0 30px 50px -28px rgba(26,26,26,.45);
+      transition: transform 0.3s cubic-bezier(0.32,0.72,0,1), box-shadow 0.3s;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .wcard.open .face { box-shadow: 0 1px 2px rgba(0,0,0,.2), 0 26px 50px -20px rgba(26,26,26,.55); }
+    .face::before { /* soft diagonal sheen */
+      content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none;
+      background: linear-gradient(125deg, rgba(255,255,255,.16) 0, transparent 30%, transparent 62%, rgba(255,255,255,.06) 100%);
+    }
+    .d-light.face::before { background: linear-gradient(125deg, rgba(255,255,255,.55) 0, transparent 34%, transparent 64%, rgba(0,0,0,.03) 100%); }
+
+    /* ── layout inside a face (all relative-flow, z above sheen) ── */
+    .ftop { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; position: relative; z-index: 2; }
+    .nick-wrap { min-width: 0; }
+    .nick { font-size: 14px; font-weight: 650; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ftype { margin-top: 3px; font-size: 8.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; opacity: .6; }
+    .brandtop { flex-shrink: 0; display: flex; align-items: center; min-height: 22px; }
+
+    .fmid { display: flex; align-items: center; gap: 11px; margin-top: 15px; position: relative; z-index: 2; }
+    .chip {
+      width: 39px; height: 29px; border-radius: 6px; flex-shrink: 0; position: relative;
+      background: linear-gradient(135deg, #f4e0a6 0, #d8b86c 45%, #b9974c 100%);
+      box-shadow: inset 0 1px 1px rgba(255,255,255,.65), inset 0 -1px 2px rgba(0,0,0,.3);
+    }
+    .chip::before { content: ''; position: absolute; inset: 5px 7px; border: 1px solid rgba(0,0,0,.3); border-radius: 3px; }
+    .chip::after { content: ''; position: absolute; top: 5px; bottom: 5px; left: 50%; width: 1px; background: rgba(0,0,0,.3); box-shadow: -7px 0 0 rgba(0,0,0,.2), 7px 0 0 rgba(0,0,0,.2); }
+    .nfc { flex-shrink: 0; opacity: .82; }
+
+    .fnum {
+      margin-top: auto; padding-top: 14px; position: relative; z-index: 2;
+      font-family: var(--mono); font-size: clamp(15px, 4.5vw, 18.5px);
+      letter-spacing: 1.6px; font-weight: 500;
+    }
+    .fbot { display: flex; align-items: flex-end; gap: 18px; margin-top: 11px; position: relative; z-index: 2; }
+    .finfo { min-width: 0; }
+    .cap { font-size: 7.5px; letter-spacing: 1.1px; text-transform: uppercase; opacity: .58; font-weight: 700; }
+    .val { font-size: 12.5px; font-weight: 600; margin-top: 2px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .fnet { margin-left: auto; flex-shrink: 0; display: flex; align-items: center; }
+
+    /* readability for light-on-dark cards */
+    .face:not(.d-light) .nick, .face:not(.d-light) .fnum, .face:not(.d-light) .val { text-shadow: 0 1px 3px rgba(0,0,0,.26); }
+
+    /* ── network marks (bottom-right) ── */
+    .net-visa { font-family: 'Inter'; font-size: 17px; font-weight: 800; font-style: italic; letter-spacing: .3px; color: #fff; }
+    .d-light .net-visa { color: #1a1f71; }
+    .net-amex { font-size: 10.5px; font-weight: 800; letter-spacing: 1px; background: #fff; color: #2671b9; padding: 3px 5px; border-radius: 3px; }
+    .net-disc { font-size: 12px; font-weight: 800; font-style: italic; display: inline-flex; align-items: center; gap: 4px; color: #f1f1f1; }
+    .d-light .net-disc { color: #45484d; }
+    .net-disc .spark, .bm-disc .spark { border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ffb74d, #f57c00); }
+    .net-disc .spark { width: 11px; height: 11px; }
+    .mc-mark { display: block; }
+
+    /* ── brand wordmarks (top-right) ── */
+    .logo-apple { width: 17px; height: 21px; color: #1d1d1f; display: block; }
+    .amz-word { font-size: 17px; font-weight: 800; letter-spacing: -0.04em; line-height: 1; }
+    .amz-smile { display: block; margin-top: 1px; }
+    .bm-oldnavy { font-size: 12px; font-weight: 800; letter-spacing: .5px; color: #fff; border: 1.6px solid #fff; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; }
+    .bm-amex { font-size: 7.5px; font-weight: 800; letter-spacing: 1.4px; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.5); padding: 3px 6px; border-radius: 3px; }
+    .bm-disc { font-size: 13px; font-weight: 800; font-style: italic; display: inline-flex; align-items: center; gap: 5px; color: #45484d; }
+    .bm-disc .spark { width: 12px; height: 12px; box-shadow: 0 0 7px rgba(245,124,0,.6); }
+
+    /* drawer revealed when a card is open */
+    .drawer {
+      max-height: 0; opacity: 0; overflow: hidden;
+      transition: max-height 0.4s cubic-bezier(0.32,0.72,0,1), opacity 0.3s, margin 0.3s;
+    }
+    .wcard.open .drawer { max-height: 160px; opacity: 1; margin-top: 10px; }
+    .dr-actions { display: flex; gap: 9px; flex-wrap: wrap; }
+    .dr-note {
+      margin-top: 10px; font-size: 12.5px; color: var(--muted);
+      background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 9px 13px;
+    }
+
+    /* ═══════════ branded backgrounds ═══════════ */
+    .d-apple { background: linear-gradient(150deg, #ffffff, #ededf0 52%, #d9d9de); }
+    .d-discover {
+      color: #fff;
+      background-color: #00318f;
+      background-image: linear-gradient(to bottom, #ffffff 0 50%, #c8102e 50% 100%);
+      background-size: 66.66% 100%; background-position: top right; background-repeat: no-repeat;
+    }
+    .d-discover::after { content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+      background: linear-gradient(to top, rgba(0,0,0,.5) 0, rgba(0,0,0,.14) 36%, transparent 58%); }
+    .tex-star { position: absolute; left: 9%; top: 64px; transform: translateX(-50%); z-index: 1; width: 38px; height: 38px; opacity: .96; }
+    .d-amex { background: linear-gradient(150deg, #19a8ec, #0a6fc2 52%, #064b8e); }
+    .d-amazon { background: linear-gradient(150deg, #37475a, #232f3e 55%, #131a21); }
+    .d-oldnavy { background: linear-gradient(150deg, #1f5fae, #143f86 50%, #0a2a5e); }
+
+    /* ═══════════ generic colour backgrounds ═══════════ */
+    .d-graphite { background: linear-gradient(150deg, #44474e, #232529 58%, #111316); }
+    .d-midnight { background: linear-gradient(150deg, #2d3f68, #182542 58%, #0b1326); }
+    .d-ocean    { background: linear-gradient(150deg, #22b6c9, #0e7d97 55%, #084f6a); }
+    .d-emerald  { background: linear-gradient(150deg, #34b487, #0f7a52 58%, #064830); }
+    .d-sunset   { background: linear-gradient(150deg, #ff9a62, #f0617a 52%, #b5417e); }
+    .d-violet   { background: linear-gradient(150deg, #9486f7, #6347cc 56%, #3a2790); }
+    .d-crimson  { background: linear-gradient(150deg, #e7565f, #b21f3a 56%, #7a1226); }
+    .d-silver   { background: linear-gradient(150deg, #fcfcfe, #e7e9ee 54%, #cbcfd8); }
+    .d-gold     { background: linear-gradient(150deg, #f6e7ba, #ddc07e 54%, #c2a45f); }
+    .d-rose     { background: linear-gradient(150deg, #f8e2db, #ecc0b6 56%, #d89f93); }
+
+    /* light cards use dark ink */
+    .d-light { color: #1d1d1f; }
+    .d-light .net-amex { background: #2671b9; color: #fff; }
+
+    /* ─────────────── empty state ─────────────── */
+    .empty { text-align: center; padding: 50px 20px; color: var(--muted); }
+    .empty .glyph { width: 64px; height: 64px; margin: 0 auto 16px; border-radius: 18px; background: var(--card); display: grid; place-items: center; box-shadow: var(--shadow); }
+    .empty h2 { font-size: 17px; font-weight: 700; color: var(--ink); margin-bottom: 5px; letter-spacing: -0.02em; }
+    .empty p { font-size: 13.5px; max-width: 280px; margin: 0 auto 22px; }
+
+    /* ─────────────── editor sheet ─────────────── */
+    .ov { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: flex-end; justify-content: center; }
+    .ov-bg { position: absolute; inset: 0; background: rgba(26,26,26,.42); backdrop-filter: blur(3px); }
+    .sheet {
+      position: relative; width: 100%; max-width: 480px; max-height: 92vh; overflow-y: auto;
+      background: var(--bg); border-radius: 26px 26px 0 0;
+      box-shadow: 0 -20px 50px -12px rgba(26,26,26,.4);
+      padding: 18px 20px calc(26px + env(safe-area-inset-bottom));
+      animation: sheetUp 0.34s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @media (min-width: 540px) { .ov { align-items: center; } .sheet { border-radius: 24px; } }
+    @keyframes sheetUp { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .sheet-head h2 { font-size: 18px; font-weight: 800; letter-spacing: -0.02em; }
+    .x { width: 34px; height: 34px; border-radius: 10px; border: none; background: var(--card); cursor: pointer; font-size: 16px; color: var(--muted); }
+    .x:hover { color: var(--ink); }
+
+    .preview-stage { display: grid; place-items: center; margin: 4px 0 18px; }
+    .preview-stage .wcard { --cardH: 183px; --peek: 0px; width: 290px; margin: 0 !important; animation: none; }
+
+    .picker { display: flex; gap: 10px; overflow-x: auto; padding: 4px 2px 10px; margin: 0 -2px; scroll-snap-type: x mandatory; }
+    .swatch {
+      flex: 0 0 auto; width: 92px; height: 58px; border-radius: 11px; cursor: pointer;
+      position: relative; overflow: hidden; border: 2.5px solid transparent;
+      transition: transform 0.15s, border-color 0.15s; scroll-snap-align: start;
+      display: grid; place-items: end start; padding: 6px;
+    }
+    .swatch:active { transform: scale(0.95); }
+    .swatch.sel { border-color: var(--gold); }
+    .swatch span { position: relative; z-index: 2; font-size: 8.5px; font-weight: 800; letter-spacing: .04em; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+    .swatch.s-light span { color: #1d1d1f; text-shadow: none; }
+    .picker-label { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 8px 2px 6px; }
+
+    /* segmented Credit / Debit control */
+    .seg { display: inline-flex; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 3px; }
+    .seg-btn { border: none; background: none; cursor: pointer; font-family: inherit; font-size: 13.5px; font-weight: 600; color: var(--muted); padding: 9px 26px; border-radius: 9px; transition: background .18s, color .18s, box-shadow .18s; }
+    .seg-btn.on { background: var(--bg); color: var(--ink); box-shadow: 0 2px 6px -3px rgba(26,26,26,.3); }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .sheet .fieldset { margin-bottom: 13px; }
+    .sheet-actions { display: flex; gap: 10px; margin-top: 18px; }
+    .sheet-actions .btn { flex: 1; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="nav-home" href="./"><svg width="21" height="21" viewBox="0 0 512 512"><circle cx="256" cy="256" r="240" fill="#C8A96E"/><path d="M256 96c52 38 76 96 76 156 0 22-3 43-10 62h-132c-7-19-10-40-10-62 0-60 24-118 76-156z" fill="#FDFAF5"/><circle cx="256" cy="222" r="26" fill="#C8A96E"/><path d="M190 314l-44 56 62-14M322 314l44 56-62-14" fill="#FDFAF5"/><path d="M256 330c14 18 14 48 0 76-14-28-14-58 0-76z" fill="#F0B45C"/></svg><span>Rocket Tools</span></a>
+    <span class="nav-sep">/</span>
+    <h1 class="nav-title">Card Vault</h1>
+    <div class="spacer"></div>
+    <span class="hint" id="topHint">AES-256 · on this device</span>
+    <button class="btn btn-ghost btn-sm" id="lockBtn" hidden>Lock</button>
+    <button class="btn btn-gold btn-sm" id="addBtn" hidden>+ Add card</button>
+  </div>
+
+  <!-- ───────────── LOCK / SETUP ───────────── -->
+  <div class="lock" id="lockView">
+    <div class="card fade-in">
+      <div class="lock-brand">
+        <div class="lock-mark">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18"/><circle cx="7.5" cy="14.5" r="1.2" fill="currentColor" stroke="none"/></svg>
+        </div>
+        <div>
+          <h2>Card Vault</h2>
+          <p>Encrypted · Offline</p>
+        </div>
+      </div>
+
+      <form id="lockForm" autocomplete="off">
+        <div class="fieldset">
+          <label id="passLabel">Master password</label>
+          <div class="pwrap">
+            <input class="field" id="pass" type="password" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="••••••••" minlength="4" required />
+            <button class="eye" type="button" id="eye" aria-label="Show password">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="fieldset" id="confirmSet" hidden>
+          <label>Confirm password</label>
+          <input class="field full" id="pass2" type="password" autocomplete="off" placeholder="••••••••" />
+        </div>
+        <p class="lock-err" id="lockErr" hidden></p>
+        <button class="btn btn-dark full" id="lockSubmit" type="submit">Unlock</button>
+      </form>
+
+      <p class="lock-note">Your password is never stored — it derives the AES-256 key that decrypts your cards on this device. There's no recovery if you forget it, and nothing is ever sent anywhere.</p>
+      <button class="lock-wipe" id="wipeBtn" hidden>Forgot password — wipe &amp; start over</button>
+    </div>
+  </div>
+
+  <!-- ───────────── VAULT ───────────── -->
+  <div class="wrap" id="vaultView" hidden>
+    <div class="wallet" id="wallet"></div>
+    <div class="empty" id="empty" hidden>
+      <div class="glyph">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#C8A96E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="3"/><path d="M2 10h20"/></svg>
+      </div>
+      <h2>Your wallet is empty</h2>
+      <p>Add your first card — pick a design, fill the details, and it's encrypted before it's saved.</p>
+      <button class="btn btn-gold" id="emptyAdd">+ Add a card</button>
+    </div>
+  </div>
+
+  <!-- ───────────── EDITOR SHEET ───────────── -->
+  <div class="ov" id="ov" hidden>
+    <div class="ov-bg" data-close></div>
+    <div class="sheet" role="dialog" aria-modal="true">
+      <div class="sheet-head">
+        <h2 id="sheetTitle">Add card</h2>
+        <button class="x" data-close aria-label="Close">✕</button>
+      </div>
+
+      <div class="preview-stage">
+        <div class="wcard"><div class="face" id="pvFace"></div></div>
+      </div>
+
+      <div class="picker" id="picker"></div>
+
+      <form id="cardForm" autocomplete="off">
+        <input type="hidden" id="cId" />
+        <div class="fieldset">
+          <label>Card name / tag</label>
+          <input class="field full" id="cName" maxlength="40" placeholder="e.g. Everyday Amex" required />
+        </div>
+        <div class="fieldset">
+          <label>Card number</label>
+          <input class="field full" id="cNumber" inputmode="numeric" autocomplete="off" placeholder="0000 0000 0000 0000" />
+        </div>
+        <div class="fieldset">
+          <label>Cardholder</label>
+          <input class="field full" id="cHolder" maxlength="40" autocomplete="off" placeholder="Name on card" />
+        </div>
+        <div class="grid2">
+          <div class="fieldset">
+            <label>Expiry (MM/YY)</label>
+            <input class="field full" id="cExpiry" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="MM/YY" />
+          </div>
+          <div class="fieldset">
+            <label>CVV</label>
+            <input class="field full" id="cCvv" type="password" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="•••" />
+          </div>
+        </div>
+        <div class="fieldset">
+          <label>Card type</label>
+          <div class="seg" id="seg">
+            <button type="button" class="seg-btn on" data-type="credit">Credit</button>
+            <button type="button" class="seg-btn" data-type="debit">Debit</button>
+          </div>
+        </div>
+        <div class="fieldset">
+          <label>Note (optional)</label>
+          <input class="field full" id="cNote" maxlength="120" autocomplete="off" placeholder="Billing zip, PIN hint, etc." />
+        </div>
+        <div class="sheet-actions">
+          <button class="btn btn-danger-ghost" id="delBtn" type="button" hidden>Delete</button>
+          <button class="btn btn-dark" id="saveBtn" type="submit">Save card</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+  /* ════════════════════ crypto (AES-GCM + PBKDF2) ════════════════════ */
+  const KDF_ITER = 250000;
+  const VERIFIER = 'rocket-vault-verifier-v1';
+  const te = new TextEncoder(), td = new TextDecoder();
+  const b64e = (buf) => { const b = new Uint8Array(buf); let s = ''; for (let i=0;i<b.length;i++) s += String.fromCharCode(b[i]); return btoa(s); };
+  const b64d = (str) => { const bin = atob(str); const b = new Uint8Array(bin.length); for (let i=0;i<bin.length;i++) b[i] = bin.charCodeAt(i); return b; };
+  const rnd = (n) => crypto.getRandomValues(new Uint8Array(n));
+
+  async function deriveKey(password, salt) {
+    const base = await crypto.subtle.importKey('raw', te.encode(password), { name:'PBKDF2' }, false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      { name:'PBKDF2', salt, iterations:KDF_ITER, hash:'SHA-256' },
+      base, { name:'AES-GCM', length:256 }, false, ['encrypt','decrypt']
+    );
+  }
+  async function enc(key, text) {
+    const iv = rnd(12);
+    const ct = await crypto.subtle.encrypt({ name:'AES-GCM', iv }, key, te.encode(text));
+    return { iv: b64e(iv), ct: b64e(ct) };
+  }
+  async function dec(key, p) {
+    const pt = await crypto.subtle.decrypt({ name:'AES-GCM', iv: b64d(p.iv) }, key, b64d(p.ct));
+    return td.decode(pt);
+  }
+
+  /* ════════════════════ storage ════════════════════ */
+  const K_META = 'rocket.vault.meta.v1';
+  const K_DATA = 'rocket.vault.data.v1';
+  const AUTOLOCK_MS = 3 * 60 * 1000;
+  const $ = (id) => document.getElementById(id);
+  const ls = { get: (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } } };
+
+  /* ════════════════════ card designs ════════════════════ */
+  const STAR = '<svg class="tex-star" viewBox="0 0 51 48"><path fill="#fff" d="M25.5 2l5.7 17.6h18.5l-15 10.9 5.7 17.6-14.9-10.9L10.6 48l5.7-17.6L1.3 19.6h18.5z"/></svg>';
+  const MC = '<svg class="mc-mark" width="36" height="23" viewBox="0 0 48 30"><circle cx="18" cy="15" r="11" fill="#EB001B"/><circle cx="30" cy="15" r="11" fill="#F79E1B" fill-opacity=".88"/></svg>';
+  const APPLE = '<svg class="logo-apple" viewBox="0 0 170 170"><path fill="currentColor" d="M150.4 130.3c-2.5 5.7-5.4 10.9-8.7 15.7-4.6 6.5-8.3 11-11.2 13.6-4.5 4.1-9.3 6.2-14.4 6.3-3.7 0-8.1-1-13.3-3.2-5.2-2.1-10-3.2-14.3-3.2-4.6 0-9.5 1.1-14.7 3.2-5.3 2.1-9.5 3.2-12.7 3.3-4.9.2-9.8-2-14.7-6.5-3.1-2.7-7-7.4-11.7-14-5-7.1-9.2-15.3-12.4-24.7C1.7 110.6 0 100.8 0 91.3c0-10.9 2.3-20.2 7-28.1 3.7-6.3 8.6-11.3 14.8-14.9 6.1-3.7 12.8-5.5 19.9-5.6 3.9 0 9.1 1.2 15.4 3.6 6.4 2.4 10.5 3.6 12.2 3.6 1.3 0 5.9-1.4 13.6-4.2 7.3-2.6 13.4-3.7 18.4-3.3 13.6 1.1 23.9 6.5 30.7 16.2-12.2 7.4-18.2 17.8-18.1 31 .1 10.4 3.9 19 11.2 25.8 3.3 3.2 7.1 5.6 11.2 7.4-.9 2.6-1.8 5.1-2.9 7.5zM119.1 7.2c0 8.1-3 15.7-8.9 22.7-7.1 8.3-15.7 13.1-25 12.4-.1-1-.2-2-.2-3.1 0-7.8 3.4-16.1 9.4-22.9 3-3.4 6.8-6.3 11.5-8.6 4.6-2.3 9-3.5 13.1-3.7.1 1.1.1 2.2.1 3.2z"/></svg>';
+  const NFC = '<svg class="nfc" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"><path d="M6 8.2a7 7 0 0 1 0 7.6"/><path d="M9.4 5.6a11.5 11.5 0 0 1 0 12.8"/><path d="M12.8 3a16 16 0 0 1 0 18"/></svg>';
+  const AMZ = '<span style="display:flex;flex-direction:column;align-items:flex-end"><span class="amz-word">amazon</span><svg class="amz-smile" viewBox="0 0 96 16" width="62"><path d="M3 6 C28 18 68 18 88 5" fill="none" stroke="#FF9900" stroke-width="3.6" stroke-linecap="round"/><path d="M88 5 l-1 6 l-6 -3 z" fill="#FF9900"/></svg></span>';
+
+  const detectNet = (num) => ({ Visa:'visa', Mastercard:'mc', Amex:'amex', Discover:'discover' }[scheme(num)] || '');
+  function netMark(net) {
+    if (net === 'visa') return '<span class="net-visa">VISA</span>';
+    if (net === 'mc') return MC;
+    if (net === 'amex') return '<span class="net-amex">AMEX</span>';
+    if (net === 'discover') return '<span class="net-disc"><span class="spark"></span>discover</span>';
+    return '';
+  }
+
+  const DESIGNS = {
+    // ── branded ──
+    apple:    { label:'Apple Card', group:'brand', cls:'d-apple d-light', light:true, swatch:'linear-gradient(150deg,#fff,#ededf0 52%,#d9d9de)', brandTop:APPLE, net:'mc' },
+    discover: { label:'Discover · Texas', group:'brand', cls:'d-discover', swatch:'linear-gradient(to right,#00318f 0 33%,#fff 33% 66%,#c8102e 66%)', brandTop:'<span class="bm-disc"><span class="spark"></span>discover</span>', net:'', extra:STAR },
+    amex:     { label:'Amex Blue Cash', group:'brand', cls:'d-amex', swatch:'linear-gradient(150deg,#19a8ec,#0a6fc2 52%,#064b8e)', brandTop:'<span class="bm-amex">BLUE CASH</span>', net:'amex' },
+    amazon:   { label:'Amazon Visa', group:'brand', cls:'d-amazon', swatch:'linear-gradient(150deg,#37475a,#232f3e 55%,#131a21)', brandTop:AMZ, net:'visa' },
+    oldnavy:  { label:'Old Navy', group:'brand', cls:'d-oldnavy', swatch:'linear-gradient(150deg,#1f5fae,#143f86 50%,#0a2a5e)', brandTop:'<span class="bm-oldnavy">OLD NAVY</span>', net:'mc' },
+    // ── generic colours (network auto-detected from the number) ──
+    graphite: { label:'Graphite', group:'color', cls:'d-graphite', swatch:'linear-gradient(150deg,#44474e,#232529 58%,#111316)' },
+    midnight: { label:'Midnight', group:'color', cls:'d-midnight', swatch:'linear-gradient(150deg,#2d3f68,#182542 58%,#0b1326)' },
+    ocean:    { label:'Ocean', group:'color', cls:'d-ocean', swatch:'linear-gradient(150deg,#22b6c9,#0e7d97 55%,#084f6a)' },
+    emerald:  { label:'Emerald', group:'color', cls:'d-emerald', swatch:'linear-gradient(150deg,#34b487,#0f7a52 58%,#064830)' },
+    sunset:   { label:'Sunset', group:'color', cls:'d-sunset', swatch:'linear-gradient(150deg,#ff9a62,#f0617a 52%,#b5417e)' },
+    violet:   { label:'Violet', group:'color', cls:'d-violet', swatch:'linear-gradient(150deg,#9486f7,#6347cc 56%,#3a2790)' },
+    crimson:  { label:'Crimson', group:'color', cls:'d-crimson', swatch:'linear-gradient(150deg,#e7565f,#b21f3a 56%,#7a1226)' },
+    silver:   { label:'Silver', group:'color', cls:'d-silver d-light', light:true, swatch:'linear-gradient(150deg,#fcfcfe,#e7e9ee 54%,#cbcfd8)' },
+    gold:     { label:'Gold', group:'color', cls:'d-gold d-light', light:true, swatch:'linear-gradient(150deg,#f6e7ba,#ddc07e 54%,#c2a45f)' },
+    rose:     { label:'Rose Gold', group:'color', cls:'d-rose d-light', light:true, swatch:'linear-gradient(150deg,#f8e2db,#ecc0b6 56%,#d89f93)' },
+  };
+  const DESIGN_ORDER = ['apple','discover','amex','amazon','oldnavy','graphite','midnight','ocean','emerald','sunset','violet','crimson','silver','gold','rose'];
+
+  /* ════════════════════ state ════════════════════ */
+  let cryptoKey = null, cards = [], openId = null, editDesign = 'apple', editType = 'credit', autolock = null;
+
+  /* ════════════════════ helpers ════════════════════ */
+  const uid = () => crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random();
+  function scheme(num) {
+    const n = (num||'').replace(/\D/g,'');
+    if (/^4/.test(n)) return 'Visa';
+    if (/^(5[1-5]|2[2-7])/.test(n)) return 'Mastercard';
+    if (/^3[47]/.test(n)) return 'Amex';
+    if (/^(60|65|64[4-9])/.test(n)) return 'Discover';
+    return '';
+  }
+  function group(num) {
+    const n = (num||'').replace(/\D/g,'');
+    if (/^3[47]/.test(n)) return n.replace(/(.{4})(.{6})(.{0,5})/, '$1 $2 $3').trim();
+    return n.replace(/(.{4})/g,'$1 ').trim();
+  }
+  function masked(num) {
+    const n = (num||'').replace(/\D/g,'');
+    if (!n) return '•••• •••• •••• ••••';
+    return '•••• •••• •••• ' + n.slice(-4).padStart(4,'•');
+  }
+  function toast(msg) {
+    document.querySelectorAll('.toast').forEach((t)=>t.remove());
+    const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg;
+    document.body.appendChild(t); setTimeout(()=>t.remove(), 1800);
+  }
+
+  /* ════════════════════ persistence ════════════════════ */
+  async function saveCards() {
+    const p = await enc(cryptoKey, JSON.stringify(cards));
+    localStorage.setItem(K_DATA, JSON.stringify(p));
+  }
+  async function loadCards() {
+    const raw = ls.get(K_DATA);
+    if (!raw) { cards = []; return; }
+    cards = JSON.parse(await dec(cryptoKey, raw)) || [];
+  }
+
+  /* ════════════════════ face rendering ════════════════════ */
+  function faceInner(card, reveal) {
+    const d = DESIGNS[card.design] || DESIGNS.graphite;
+    const net = ('net' in d) ? d.net : detectNet(card.number);
+    const topRight = d.brandTop || NFC;
+    const typeLabel = card.type === 'debit' ? 'Debit' : 'Credit';
+    return (d.extra || '') +
+      '<div class="ftop"><div class="nick-wrap">' +
+        '<div class="nick">' + escapeHtml(card.name || 'Card') + '</div>' +
+        '<div class="ftype">' + typeLabel + '</div></div>' +
+        '<div class="brandtop">' + topRight + '</div></div>' +
+      '<div class="fmid"><span class="chip"></span></div>' +
+      '<div class="fnum">' + (reveal ? group(card.number) : masked(card.number)) + '</div>' +
+      '<div class="fbot">' +
+        '<div class="finfo"><div class="cap">Card Holder</div><div class="val">' + escapeHtml(card.holder || '—') + '</div></div>' +
+        '<div class="finfo"><div class="cap">Expires</div><div class="val">' + (reveal ? (card.expiry || '••/••') : '••/••') + '</div></div>' +
+        (reveal && card.cvv ? '<div class="finfo"><div class="cap">CVV</div><div class="val">' + escapeHtml(card.cvv) + '</div></div>' : '') +
+        '<div class="fnet">' + netMark(net) + '</div>' +
+      '</div>';
+  }
+  function escapeHtml(s) { return (s||'').replace(/[&<>"]/g, (c)=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c])); }
+
+  /* ════════════════════ wallet render ════════════════════ */
+  function renderWallet() {
+    const w = $('wallet');
+    w.innerHTML = '';
+    $('empty').hidden = cards.length > 0;
+    cards.forEach((c, i) => {
+      const isOpen = c.id === openId;
+      const el = document.createElement('div');
+      el.className = 'wcard' + (isOpen ? ' open' : '');
+      el.style.zIndex = isOpen ? 999 : (i + 1);
+      el.innerHTML =
+        '<div class="face ' + (DESIGNS[c.design] || DESIGNS.graphite).cls + '">' + faceInner(c, isOpen) + '</div>' +
+        '<div class="drawer">' +
+          '<div class="dr-actions">' +
+            '<button class="btn btn-ghost btn-sm" data-act="copy">Copy number</button>' +
+            '<button class="btn btn-ghost btn-sm" data-act="edit">Edit</button>' +
+            '<button class="btn btn-danger-ghost btn-sm" data-act="del">Delete</button>' +
+          '</div>' +
+          (c.note ? '<div class="dr-note">' + escapeHtml(c.note) + '</div>' : '') +
+        '</div>';
+
+      el.querySelector('.face').addEventListener('click', () => {
+        openId = (openId === c.id) ? null : c.id;
+        renderWallet();
+      });
+      el.querySelectorAll('[data-act]').forEach((btn) => btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const act = btn.dataset.act;
+        if (act === 'copy') copyNum(c);
+        else if (act === 'edit') openEditor(c);
+        else if (act === 'del') delCard(c);
+      }));
+      w.appendChild(el);
+    });
+  }
+
+  async function copyNum(c) {
+    try { await navigator.clipboard.writeText((c.number||'').replace(/\D/g,'')); toast('Number copied'); }
+    catch { toast('Copy not available'); }
+  }
+  async function delCard(c) {
+    if (!confirm('Delete "' + (c.name||'this card') + '" permanently?')) return;
+    cards = cards.filter((x) => x.id !== c.id);
+    if (openId === c.id) openId = null;
+    await saveCards(); renderWallet(); toast('Card deleted');
+  }
+
+  /* ════════════════════ editor ════════════════════ */
+  function buildPicker() {
+    const p = $('picker'); p.innerHTML = '';
+    DESIGN_ORDER.forEach((id) => {
+      const d = DESIGNS[id];
+      const s = document.createElement('div');
+      s.className = 'swatch' + (d.light ? ' s-light' : '') + (id === editDesign ? ' sel' : '');
+      s.style.background = d.swatch;
+      s.innerHTML = '<span>' + d.label + '</span>';
+      s.addEventListener('click', () => {
+        editDesign = id; buildPicker(); updatePreview();
+        s.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+      });
+      p.appendChild(s);
+    });
+  }
+  function setType(t) {
+    editType = t;
+    document.querySelectorAll('#seg .seg-btn').forEach((b) => b.classList.toggle('on', b.dataset.type === t));
+    updatePreview();
+  }
+  function currentFormCard() {
+    return {
+      name: $('cName').value.trim(), number: $('cNumber').value,
+      holder: $('cHolder').value.trim(), expiry: $('cExpiry').value.trim(),
+      cvv: $('cCvv').value.trim(), design: editDesign, type: editType,
+    };
+  }
+  function updatePreview() {
+    const f = $('pvFace');
+    f.className = 'face ' + (DESIGNS[editDesign] || DESIGNS.graphite).cls;
+    f.innerHTML = faceInner(currentFormCard(), true);
+  }
+  function openEditor(card) {
+    const isEdit = !!card;
+    $('sheetTitle').textContent = isEdit ? 'Edit card' : 'Add card';
+    $('cId').value = isEdit ? card.id : '';
+    $('cName').value = isEdit ? card.name||'' : '';
+    $('cNumber').value = isEdit ? group(card.number||'') : '';
+    $('cHolder').value = isEdit ? card.holder||'' : '';
+    $('cExpiry').value = isEdit ? card.expiry||'' : '';
+    $('cCvv').value = isEdit ? card.cvv||'' : '';
+    $('cNote').value = isEdit ? card.note||'' : '';
+    editDesign = (isEdit && card.design) || 'apple';
+    editType = (isEdit && card.type) || 'credit';
+    $('delBtn').hidden = !isEdit;
+    buildPicker(); setType(editType);
+    $('ov').hidden = false;
+    setTimeout(() => $('cName').focus(), 50);
+  }
+  function closeEditor() { $('ov').hidden = true; $('cardForm').reset(); }
+
+  async function submitCard(e) {
+    e.preventDefault();
+    const id = $('cId').value;
+    const data = {
+      id: id || uid(),
+      name: $('cName').value.trim(),
+      number: $('cNumber').value.replace(/\s+/g,' ').trim(),
+      holder: $('cHolder').value.trim(),
+      expiry: $('cExpiry').value.trim(),
+      cvv: $('cCvv').value.trim(),
+      note: $('cNote').value.trim(),
+      design: editDesign,
+      type: editType,
+    };
+    if (!data.name) { toast('Give the card a name'); return; }
+    if (id) { const i = cards.findIndex((c)=>c.id===id); if (i>=0) cards[i] = data; }
+    else { cards.push(data); openId = data.id; }
+    await saveCards(); closeEditor(); renderWallet(); toast('Saved & encrypted');
+  }
+
+  /* ════════════════════ lock / unlock ════════════════════ */
+  const hasVault = () => !!ls.get(K_META);
+  function showView(v) {
+    $('lockView').hidden = v !== 'lock';
+    $('vaultView').hidden = v !== 'vault';
+    $('addBtn').hidden = $('lockBtn').hidden = v !== 'vault';
+    $('topHint').hidden = v === 'vault';
+  }
+  function resetAutolock() { clearTimeout(autolock); if (cryptoKey) autolock = setTimeout(lock, AUTOLOCK_MS); }
+  function lock() {
+    cryptoKey = null; cards = []; openId = null; clearTimeout(autolock);
+    closeEditor(); $('pass').value = ''; $('pass2').value = '';
+    renderLock(); showView('lock'); setTimeout(()=>$('pass').focus(), 60);
+  }
+  function renderLock() {
+    const setup = !hasVault();
+    $('passLabel').textContent = setup ? 'Create a master password' : 'Master password';
+    $('confirmSet').hidden = !setup;
+    $('lockSubmit').textContent = setup ? 'Create vault' : 'Unlock';
+    $('wipeBtn').hidden = setup;
+    $('lockErr').hidden = true;
+  }
+  async function submitLock(e) {
+    e.preventDefault();
+    const pass = $('pass').value, err = $('lockErr');
+    err.hidden = true;
+    try {
+      if (!hasVault()) {
+        if (pass.length < 4) throw new Error('Password must be at least 4 characters.');
+        if (pass !== $('pass2').value) throw new Error('Passwords do not match.');
+        const salt = rnd(16);
+        cryptoKey = await deriveKey(pass, salt);
+        const verifier = await enc(cryptoKey, VERIFIER);
+        localStorage.setItem(K_META, JSON.stringify({ salt: b64e(salt), verifier, iterations: KDF_ITER }));
+        cards = []; await saveCards();
+      } else {
+        const meta = ls.get(K_META);
+        cryptoKey = await deriveKey(pass, b64d(meta.salt));
+        const check = await dec(cryptoKey, meta.verifier); // throws on wrong key
+        if (check !== VERIFIER) throw new Error('bad');
+        await loadCards();
+      }
+      $('pass').value = ''; $('pass2').value = '';
+      showView('vault'); renderWallet(); resetAutolock();
+    } catch (ex) {
+      cryptoKey = null;
+      err.textContent = /at least|match/.test(ex.message) ? ex.message : 'Wrong password.';
+      err.hidden = false;
+    }
+  }
+  function wipe() {
+    if (!confirm('This erases ALL stored cards and the vault password. This cannot be undone. Continue?')) return;
+    localStorage.removeItem(K_META); localStorage.removeItem(K_DATA);
+    lock(); toast('Vault wiped');
+  }
+
+  /* ════════════════════ input formatting ════════════════════ */
+  $('cExpiry').addEventListener('input', (e) => {
+    let v = e.target.value.replace(/\D/g,'').slice(0,4);
+    if (v.length >= 3) v = v.slice(0,2) + '/' + v.slice(2);
+    e.target.value = v; updatePreview();
+  });
+  $('cNumber').addEventListener('input', (e) => { e.target.value = group(e.target.value.replace(/\D/g,'').slice(0,19)); updatePreview(); });
+  ['cName','cHolder','cCvv'].forEach((id) => $(id).addEventListener('input', updatePreview));
+  document.querySelectorAll('#seg .seg-btn').forEach((b) => b.addEventListener('click', () => setType(b.dataset.type)));
+
+  /* ════════════════════ wiring ════════════════════ */
+  $('lockForm').addEventListener('submit', submitLock);
+  $('eye').addEventListener('click', () => { const p = $('pass'); p.type = p.type === 'password' ? 'text' : 'password'; });
+  $('wipeBtn').addEventListener('click', wipe);
+  $('lockBtn').addEventListener('click', lock);
+  $('addBtn').addEventListener('click', () => openEditor(null));
+  $('emptyAdd').addEventListener('click', () => openEditor(null));
+  $('cardForm').addEventListener('submit', submitCard);
+  $('delBtn').addEventListener('click', () => { const c = cards.find((x)=>x.id===$('cId').value); if (c) delCard(c); });
+  document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', closeEditor));
+  ['click','keydown','touchstart'].forEach((ev) => document.addEventListener(ev, resetAutolock, { passive:true }));
+
+  renderLock(); showView('lock'); setTimeout(()=>$('pass').focus(), 80);
+
+  if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(()=>{}));
+  }
+  </script>
+</body>
+</html>
