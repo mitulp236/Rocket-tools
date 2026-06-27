@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>WhatsApp Quick — Message Any Number Without Saving It | Rocket Tools</title>
+  <meta name="description" content="Open a chat with any phone number in WhatsApp without saving it as a contact. Pick a country code, type the number, and go — runs entirely in your browser." />
+  <link rel="canonical" href="https://rocket-tools.app/whatsapp.html" />
+  <meta property="og:site_name" content="Rocket Tools" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="WhatsApp Quick — Message Any Number Without Saving It" />
+  <meta property="og:description" content="Open a WhatsApp chat with any number without adding it to your contacts. Country-code picker, fully on-device." />
+  <meta property="og:url" content="https://rocket-tools.app/whatsapp.html" />
+  <meta property="og:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:image" content="https://rocket-tools.app/og-image.jpg" />
+  <meta name="theme-color" content="#FDFAF5" />
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebApplication","name":"WhatsApp Quick","url":"https://rocket-tools.app/whatsapp.html","applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"description":"Open a WhatsApp chat with any phone number without saving it as a contact."},{"@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Rocket Tools","item":"https://rocket-tools.app/"},{"@type":"ListItem","position":2,"name":"WhatsApp Quick","item":"https://rocket-tools.app/whatsapp.html"}]}]}</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icon.svg" type="image/svg+xml" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="theme.css" />
+  <style>
+    .wrap { max-width: 520px; margin: 0 auto; padding: 40px 20px 60px; }
+
+    .lede { text-align: center; margin-bottom: 30px; }
+    .lede h2 {
+      font-size: clamp(24px, 5vw, 32px); font-weight: 800;
+      letter-spacing: -0.035em; line-height: 1.12; margin-bottom: 10px;
+    }
+    .lede h2 em {
+      font-style: normal;
+      background: linear-gradient(105deg, #B3934F 25%, #E8CD92 48%, #C8A96E 70%);
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .lede p { color: var(--muted); font-size: 14.5px; max-width: 380px; margin: 0 auto; }
+
+    .panel {
+      background: var(--card); border-radius: var(--radius);
+      border: 1px solid rgba(255,255,255,0.6); box-shadow: var(--shadow);
+      padding: 24px 22px;
+    }
+    .lbl {
+      display: block; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+      margin-bottom: 9px;
+    }
+
+    /* phone row */
+    .phone-row { display: flex; gap: 9px; }
+    .cc-trigger {
+      display: flex; align-items: center; gap: 7px;
+      background: var(--bg); border: 1.5px solid var(--line); border-radius: 13px;
+      padding: 0 13px; font-family: inherit; font-size: 15px; font-weight: 600;
+      color: var(--ink); cursor: pointer; white-space: nowrap;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .cc-trigger:focus-visible { outline: none; border-color: var(--gold); box-shadow: 0 0 0 4px rgba(200,169,110,0.15); }
+    .cc-trigger .flag { font-size: 19px; line-height: 1; }
+    .cc-trigger .dial { font-variant-numeric: tabular-nums; }
+    .cc-trigger .chev { color: var(--muted); transition: transform 0.2s; }
+    .cc-trigger[aria-expanded="true"] .chev { transform: rotate(180deg); }
+
+    #phone {
+      flex: 1; min-width: 0;
+      font-family: inherit; font-size: 17px; letter-spacing: 0.4px;
+      color: var(--ink); background: var(--bg);
+      border: 1.5px solid var(--line); border-radius: 13px; padding: 14px 15px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    #phone::placeholder { color: var(--muted); letter-spacing: 0; }
+    #phone:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 4px rgba(200,169,110,0.15); }
+
+    .msg-wrap { margin-top: 16px; }
+    #message {
+      width: 100%; font-family: inherit; font-size: 14.5px; color: var(--ink);
+      background: var(--bg); border: 1.5px solid var(--line); border-radius: 13px;
+      padding: 12px 15px; resize: vertical; min-height: 54px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    #message::placeholder { color: var(--muted); }
+    #message:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 4px rgba(200,169,110,0.15); }
+
+    .preview {
+      margin: 16px 2px 0; font-size: 12.5px; color: var(--muted);
+      min-height: 1.2em; font-variant-numeric: tabular-nums;
+    }
+    .preview b { color: var(--good); font-weight: 600; }
+
+    .go {
+      margin-top: 18px; width: 100%; padding: 15px;
+      background: #25D366; color: #053c1e; font-size: 15.5px; font-weight: 700;
+      border: none; border-radius: 14px; cursor: pointer;
+      display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+      transition: transform 0.18s, opacity 0.18s, box-shadow 0.18s;
+      box-shadow: 0 12px 28px -12px rgba(37,211,102,0.6);
+    }
+    .go:hover { opacity: 0.94; }
+    .go:active { transform: scale(0.98); }
+    .go:disabled { opacity: 0.4; cursor: default; box-shadow: none; }
+
+    .note {
+      display: flex; align-items: flex-start; gap: 9px;
+      margin-top: 22px; font-size: 12.5px; color: var(--muted); line-height: 1.5;
+    }
+    .note svg { flex-shrink: 0; margin-top: 1px; color: var(--gold); }
+
+    /* country dropdown */
+    .cc-pop {
+      position: absolute; z-index: 60;
+      width: min(340px, calc(100vw - 36px));
+      background: var(--bg); border: 1px solid var(--line);
+      border-radius: 16px; box-shadow: 0 24px 60px -20px rgba(26,26,26,0.4);
+      overflow: hidden; display: flex; flex-direction: column;
+      animation: ccIn 0.16s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes ccIn { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: none; } }
+    .cc-pop .cc-search-wrap { padding: 12px 12px 8px; border-bottom: 1px solid var(--line); }
+    .cc-pop input {
+      width: 100%; font-family: inherit; font-size: 14px; color: var(--ink);
+      background: var(--card); border: 1.5px solid var(--line); border-radius: 11px;
+      padding: 10px 13px;
+    }
+    .cc-pop input:focus { outline: none; border-color: var(--gold); }
+    .cc-list { overflow-y: auto; max-height: 300px; padding: 6px; }
+    .cc-opt {
+      display: flex; align-items: center; gap: 11px;
+      padding: 10px 11px; border-radius: 10px; cursor: pointer; font-size: 14px;
+    }
+    .cc-opt:hover, .cc-opt.active { background: var(--card); }
+    .cc-opt .flag { font-size: 19px; }
+    .cc-opt .name { flex: 1; }
+    .cc-opt .dial { color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .cc-empty { padding: 22px; text-align: center; color: var(--muted); font-size: 13px; }
+    .cc-backdrop { position: fixed; inset: 0; z-index: 55; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a class="nav-home" href="./"><svg width="21" height="21" viewBox="0 0 512 512"><circle cx="256" cy="256" r="240" fill="#C8A96E"/><path d="M256 96c52 38 76 96 76 156 0 22-3 43-10 62h-132c-7-19-10-40-10-62 0-60 24-118 76-156z" fill="#FDFAF5"/><circle cx="256" cy="222" r="26" fill="#C8A96E"/><path d="M190 314l-44 56 62-14M322 314l44 56-62-14" fill="#FDFAF5"/><path d="M256 330c14 18 14 48 0 76-14-28-14-58 0-76z" fill="#F0B45C"/></svg><span>Rocket Tools</span></a>
+    <span class="nav-sep">/</span>
+    <h1 class="nav-title">WhatsApp Quick</h1>
+    <div class="spacer"></div>
+    <span class="hint">no number is ever saved</span>
+  </div>
+
+  <div class="wrap fade-in">
+    <div class="lede">
+      <h2>Message anyone,<br /><em>without saving them.</em></h2>
+      <p>Pick a country code, type a number, and open a WhatsApp chat instantly — nothing is added to your contacts.</p>
+    </div>
+
+    <div class="panel">
+      <span class="lbl">Phone number</span>
+      <div class="phone-row">
+        <button id="ccTrigger" class="cc-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+          <span class="flag" id="ccFlag">🇮🇳</span>
+          <span class="dial" id="ccDial">+91</span>
+          <svg class="chev" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+        <input id="phone" type="tel" inputmode="tel" autocomplete="off" placeholder="98765 43210" />
+      </div>
+
+      <div class="msg-wrap">
+        <span class="lbl">Message <span style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">· optional</span></span>
+        <textarea id="message" placeholder="Type a message to pre-fill the chat…"></textarea>
+      </div>
+
+      <p class="preview" id="preview"></p>
+
+      <button id="go" class="go" type="button" disabled>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.7 14.9L2 22l5.3-1.4A10 10 0 1 0 12 2Zm4.6 12.1c-.3-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.6 6.6 0 0 1-1.9-1.2 7.3 7.3 0 0 1-1.4-1.7c-.1-.3 0-.4.1-.5l.4-.5c.1-.2.2-.3.3-.5a.5.5 0 0 0 0-.5L8.6 7.6c-.2-.4-.3-.4-.5-.4h-.5a1 1 0 0 0-.7.3 2.8 2.8 0 0 0-.9 2.1c0 1.3.9 2.5 1 2.7s1.8 2.9 4.5 4a14 14 0 0 0 1.5.6 3.6 3.6 0 0 0 1.6.1c.5-.1 1.5-.6 1.7-1.2s.2-1.1.2-1.2-.2-.2-.4-.3Z"/></svg>
+        Open in WhatsApp
+      </button>
+
+      <div class="note">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+        <span>Tip: paste a full international number starting with <b style="color:var(--ink);font-weight:600">+</b> and it’ll be used as-is, ignoring the country code.</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const COUNTRIES = [
+      ["Afghanistan","93","AF","🇦🇫"],["Albania","355","AL","🇦🇱"],["Algeria","213","DZ","🇩🇿"],
+      ["Argentina","54","AR","🇦🇷"],["Armenia","374","AM","🇦🇲"],["Australia","61","AU","🇦🇺"],
+      ["Austria","43","AT","🇦🇹"],["Azerbaijan","994","AZ","🇦🇿"],["Bahrain","973","BH","🇧🇭"],
+      ["Bangladesh","880","BD","🇧🇩"],["Belarus","375","BY","🇧🇾"],["Belgium","32","BE","🇧🇪"],
+      ["Bolivia","591","BO","🇧🇴"],["Brazil","55","BR","🇧🇷"],["Bulgaria","359","BG","🇧🇬"],
+      ["Cambodia","855","KH","🇰🇭"],["Cameroon","237","CM","🇨🇲"],["Canada","1","CA","🇨🇦"],
+      ["Chile","56","CL","🇨🇱"],["China","86","CN","🇨🇳"],["Colombia","57","CO","🇨🇴"],
+      ["Costa Rica","506","CR","🇨🇷"],["Croatia","385","HR","🇭🇷"],["Cyprus","357","CY","🇨🇾"],
+      ["Czech Republic","420","CZ","🇨🇿"],["Denmark","45","DK","🇩🇰"],["Ecuador","593","EC","🇪🇨"],
+      ["Egypt","20","EG","🇪🇬"],["El Salvador","503","SV","🇸🇻"],["Estonia","372","EE","🇪🇪"],
+      ["Ethiopia","251","ET","🇪🇹"],["Finland","358","FI","🇫🇮"],["France","33","FR","🇫🇷"],
+      ["Georgia","995","GE","🇬🇪"],["Germany","49","DE","🇩🇪"],["Ghana","233","GH","🇬🇭"],
+      ["Greece","30","GR","🇬🇷"],["Guatemala","502","GT","🇬🇹"],["Hong Kong","852","HK","🇭🇰"],
+      ["Hungary","36","HU","🇭🇺"],["Iceland","354","IS","🇮🇸"],["India","91","IN","🇮🇳"],
+      ["Indonesia","62","ID","🇮🇩"],["Iran","98","IR","🇮🇷"],["Iraq","964","IQ","🇮🇶"],
+      ["Ireland","353","IE","🇮🇪"],["Israel","972","IL","🇮🇱"],["Italy","39","IT","🇮🇹"],
+      ["Japan","81","JP","🇯🇵"],["Jordan","962","JO","🇯🇴"],["Kazakhstan","7","KZ","🇰🇿"],
+      ["Kenya","254","KE","🇰🇪"],["Kuwait","965","KW","🇰🇼"],["Latvia","371","LV","🇱🇻"],
+      ["Lebanon","961","LB","🇱🇧"],["Lithuania","370","LT","🇱🇹"],["Luxembourg","352","LU","🇱🇺"],
+      ["Malaysia","60","MY","🇲🇾"],["Maldives","960","MV","🇲🇻"],["Malta","356","MT","🇲🇹"],
+      ["Mexico","52","MX","🇲🇽"],["Moldova","373","MD","🇲🇩"],["Morocco","212","MA","🇲🇦"],
+      ["Nepal","977","NP","🇳🇵"],["Netherlands","31","NL","🇳🇱"],["New Zealand","64","NZ","🇳🇿"],
+      ["Nigeria","234","NG","🇳🇬"],["Norway","47","NO","🇳🇴"],["Oman","968","OM","🇴🇲"],
+      ["Pakistan","92","PK","🇵🇰"],["Panama","507","PA","🇵🇦"],["Paraguay","595","PY","🇵🇾"],
+      ["Peru","51","PE","🇵🇪"],["Philippines","63","PH","🇵🇭"],["Poland","48","PL","🇵🇱"],
+      ["Portugal","351","PT","🇵🇹"],["Qatar","974","QA","🇶🇦"],["Romania","40","RO","🇷🇴"],
+      ["Russia","7","RU","🇷🇺"],["Saudi Arabia","966","SA","🇸🇦"],["Serbia","381","RS","🇷🇸"],
+      ["Singapore","65","SG","🇸🇬"],["Slovakia","421","SK","🇸🇰"],["Slovenia","386","SI","🇸🇮"],
+      ["South Africa","27","ZA","🇿🇦"],["South Korea","82","KR","🇰🇷"],["Spain","34","ES","🇪🇸"],
+      ["Sri Lanka","94","LK","🇱🇰"],["Sweden","46","SE","🇸🇪"],["Switzerland","41","CH","🇨🇭"],
+      ["Taiwan","886","TW","🇹🇼"],["Tanzania","255","TZ","🇹🇿"],["Thailand","66","TH","🇹🇭"],
+      ["Tunisia","216","TN","🇹🇳"],["Turkey","90","TR","🇹🇷"],["Uganda","256","UG","🇺🇬"],
+      ["Ukraine","380","UA","🇺🇦"],["United Arab Emirates","971","AE","🇦🇪"],
+      ["United Kingdom","44","GB","🇬🇧"],["United States","1","US","🇺🇸"],["Uruguay","598","UY","🇺🇾"],
+      ["Uzbekistan","998","UZ","🇺🇿"],["Venezuela","58","VE","🇻🇪"],["Vietnam","84","VN","🇻🇳"],
+      ["Yemen","967","YE","🇾🇪"],["Zambia","260","ZM","🇿🇲"],["Zimbabwe","263","ZW","🇿🇼"]
+    ].map(([name, code, iso, flag]) => ({ name, code, iso, flag }));
+
+    const $ = (id) => document.getElementById(id);
+    const CC_KEY = "rt_wa_cc";
+
+    const phone = $("phone");
+    const message = $("message");
+    const go = $("go");
+    const preview = $("preview");
+    const ccTrigger = $("ccTrigger");
+
+    let country = pickInitialCountry();
+    renderCountry();
+    updateState();
+
+    function pickInitialCountry() {
+      // honour a previously chosen code, otherwise default to India +91
+      const savedIso = localStorage.getItem(CC_KEY);
+      if (savedIso) {
+        const m = COUNTRIES.find((c) => c.iso === savedIso);
+        if (m) return m;
+      }
+      return COUNTRIES.find((c) => c.iso === "IN");
+    }
+
+    function renderCountry() {
+      $("ccFlag").textContent = country.flag;
+      $("ccDial").textContent = "+" + country.code;
+    }
+
+    // Build full international digits from the current input + country code.
+    function fullDigits() {
+      const raw = phone.value.trim();
+      if (raw.startsWith("+")) return raw.replace(/\D/g, "");        // user gave full intl number
+      let local = raw.replace(/\D/g, "").replace(/^0+/, "");          // drop trunk-prefix zeros
+      if (!local) return "";
+      return country.code + local;
+    }
+
+    function updateState() {
+      const d = fullDigits();
+      const ok = d.length >= 7;
+      go.disabled = !ok;
+      preview.innerHTML = d
+        ? (ok ? 'Opens chat with <b>+' + d + '</b>' : 'Keep typing…')
+        : '';
+    }
+
+    phone.addEventListener("input", () => {
+      // allow only digits, spaces and a single leading +
+      let v = phone.value.replace(/[^\d+\s]/g, "");
+      if (v.indexOf("+") > 0) v = v.replace(/\+/g, "");
+      phone.value = v;
+      updateState();
+    });
+
+    function openChat() {
+      const d = fullDigits();
+      if (d.length < 7) return;
+      let url = "https://wa.me/" + d;
+      const msg = message.value.trim();
+      if (msg) url += "?text=" + encodeURIComponent(msg);
+      window.open(url, "_blank", "noopener");
+    }
+
+    go.addEventListener("click", openChat);
+    phone.addEventListener("keydown", (e) => { if (e.key === "Enter" && !go.disabled) openChat(); });
+
+    // ── country dropdown ──
+    let pop = null, backdrop = null;
+
+    ccTrigger.addEventListener("click", () => (pop ? closePop() : openPop()));
+
+    function openPop() {
+      backdrop = document.createElement("div");
+      backdrop.className = "cc-backdrop";
+      backdrop.addEventListener("click", closePop);
+      document.body.appendChild(backdrop);
+
+      pop = document.createElement("div");
+      pop.className = "cc-pop";
+      pop.innerHTML =
+        '<div class="cc-search-wrap"><input id="ccSearch" type="search" placeholder="Search country or code" autocomplete="off" /></div>' +
+        '<div class="cc-list" id="ccList"></div>';
+      document.body.appendChild(pop);
+
+      // position under the trigger
+      const r = ccTrigger.getBoundingClientRect();
+      pop.style.top = (window.scrollY + r.bottom + 8) + "px";
+      pop.style.left = (window.scrollX + r.left) + "px";
+
+      ccTrigger.setAttribute("aria-expanded", "true");
+      const search = $("ccSearch");
+      search.addEventListener("input", () => buildList(search.value));
+      buildList("");
+      setTimeout(() => search.focus(), 30);
+      document.addEventListener("keydown", onEsc);
+    }
+
+    function closePop() {
+      if (pop) pop.remove();
+      if (backdrop) backdrop.remove();
+      pop = backdrop = null;
+      ccTrigger.setAttribute("aria-expanded", "false");
+      document.removeEventListener("keydown", onEsc);
+    }
+
+    function onEsc(e) { if (e.key === "Escape") closePop(); }
+
+    function buildList(query) {
+      const q = query.trim().toLowerCase();
+      const qDigits = q.replace(/\D/g, "");
+      const list = COUNTRIES.filter((c) => {
+        if (!q) return true;
+        return c.name.toLowerCase().includes(q)
+          || c.iso.toLowerCase().includes(q)
+          || (qDigits && c.code.includes(qDigits));
+      });
+      const box = $("ccList");
+      if (!list.length) { box.innerHTML = '<div class="cc-empty">No match</div>'; return; }
+      box.innerHTML = "";
+      for (const c of list) {
+        const row = document.createElement("div");
+        row.className = "cc-opt" + (c.iso === country.iso ? " active" : "");
+        row.innerHTML =
+          '<span class="flag">' + c.flag + '</span>' +
+          '<span class="name">' + c.name + '</span>' +
+          '<span class="dial">+' + c.code + '</span>';
+        row.addEventListener("click", () => {
+          country = c;
+          localStorage.setItem(CC_KEY, c.iso);
+          renderCountry();
+          closePop();
+          updateState();
+          phone.focus();
+        });
+        box.appendChild(row);
+      }
+    }
+
+    if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+      window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+    }
+  </script>
+</body>
+</html>

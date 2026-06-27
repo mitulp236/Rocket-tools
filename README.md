@@ -8,6 +8,7 @@ never leaves your device.
 
 | Tool | File | What it does |
 |---|---|---|
+| **WhatsApp Quick** | `whatsapp.html` | Open a WhatsApp chat with any number without saving it — country-code picker, optional pre-filled message, `wa.me` deep link |
 | **Meet** | `meet.html` | P2P group video calls — shareable link, avatar identities (joins muted/camera-off), screen share, host-enforced guest limit (PeerJS mesh) |
 | **PeerDrop** | `peerdrop.html` | P2P file transfer of any size over encrypted WebRTC, streamed in 64 KB chunks with backpressure |
 | **Whiteboard** | `whiteboard.html` | Infinite canvas (embedded Excalidraw), autosaved to localStorage |
